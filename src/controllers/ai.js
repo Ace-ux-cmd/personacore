@@ -1,0 +1,273 @@
+'use strict';
+
+const { randomUUID } = require('crypto');
+
+const GeminiService = require('../services/gemini');
+const MemoryService = require('../services/memory');
+const VisionService = require('../services/vision');
+const SpeechRecognitionService = require('../services/speechRecognition');
+const VoiceOutputService = require('../services/voiceOutput');
+const defaults = require('../config/defaults');
+
+/**
+ * PersonaCore's main entry point.
+ *
+ * Coordinates the feature services (memory, vision, speech recognition,
+ * voice output) and the Gemini service, but contains no Gemini-specific
+ * or storage-specific logic itself (NFR-8, NFR-9): it only orchestrates.
+ */
+class AI {
+  /**
+   * @param {{apiKeys: string[], persona: string, historyLimit?: number}} config
+   */
+  constructor(config) {
+    if (!config || typeof config !== 'object') {
+      throw new Error('PersonaCore: a configuration object is required.');
+    }
+
+    const { apiKeys, persona, historyLimit } = config;
+
+    if (!Array.isArray(apiKeys) || apiKeys.length === 0 || apiKeys.some((k) => typeof k !== 'string' || !k)) {
+      throw new Error('PersonaCore: "apiKeys" must be a non-empty array of Gemini API key strings.');
+    }
+
+    if (!persona || typeof persona !== 'string') {
+      throw new Error('PersonaCore: "persona" is required and must be a string.');
+    }
+
+    if (historyLimit !== undefined && (typeof historyLimit !== 'number' || historyLimit <= 0)) {
+      throw new Error('PersonaCore: "historyLimit" must be a positive number.');
+    }
+
+    this._gemini = new GeminiService(apiKeys, persona);
+    this._memory = new MemoryService(historyLimit);
+    this._historyLimit = typeof historyLimit === 'number' ? historyLimit : defaults.HISTORY_LIMIT;
+
+    // Optional feature services; null until explicitly enabled (NFR-1, NFR-11).
+    this._vision = null;
+    this._speechRecognition = null;
+    this._voiceOutput = null;
+  }
+
+  /**
+   * Enables persistent conversation history via MongoDB (FR-15).
+   * @param {string} mongoUri
+   */
+  useMemory(mongoUri) {
+    if (!mongoUri || typeof mongoUri !== 'string') {
+      throw new Error('PersonaCore: useMemory() requires a valid MongoDB connection string.');
+    }
+    const collectionName = `personacore_history_${randomUUID()}`;
+    this._memory.useMongo(mongoUri, collectionName);
+  }
+
+  /**
+   * Enables image understanding (FR-25, FR-26).
+   */
+  useVision() {
+    this._vision = new VisionService();
+  }
+
+  /**
+   * Enables voice input transcription (FR-27, FR-28).
+   */
+  useSpeechRecognition() {
+    this._speechRecognition = new SpeechRecognitionService(this._gemini);
+  }
+
+  /**
+   * Enables voice output generation (FR-31, FR-32).
+   * @param {{includeText?: boolean, probability?: number}} [options]
+   */
+  useVoiceOutput(options = {}) {
+    if (options.probability !== undefined) {
+      if (typeof options.probability !== 'number' || options.probability < 0 || options.probability > 1) {
+        throw new Error('PersonaCore: "probability" must be a number between 0 and 1.');
+      }
+    }
+    if (options.includeText !== undefined && typeof options.includeText !== 'boolean') {
+      throw new Error('PersonaCore: "includeText" must be a boolean.');
+    }
+
+    // Resolve the default probability based on includeText (FR-34, FR-35)
+    // only when the caller didn't explicitly provide one.
+    const includeText = options.includeText === true;
+    const probability =
+      options.probability !== undefined
+        ? options.probability
+        : includeText
+          ? defaults.VOICE_OUTPUT.PROBABILITY_VOICE_AND_TEXT
+          : defaults.VOICE_OUTPUT.PROBABILITY_VOICE_ONLY;
+
+    this._voiceOutput = new VoiceOutputService(this._gemini, { probability, includeText });
+  }
+
+  /**
+   * Processes a conversation request (FR-5 through FR-10).
+   *
+   * @param {{userId: string, text?: string, image?: Buffer, voice?: Buffer}} request
+   * @returns {Promise<object>} Response object; shape depends on enabled features.
+   */
+  async handleMessage(request) {
+    const startTime = Date.now();
+
+    this._validateHandleMessageRequest(request);
+    const { userId, text, image, voice } = request;
+
+    // 1. Resolve the effective text input, transcribing voice first if present (FR-29).
+    let effectiveText = text;
+    let sttMetadata = null;
+
+    if (voice) {
+      if (!this._speechRecognition) {
+        throw new Error('PersonaCore: voice input requires useSpeechRecognition() to be enabled.');
+      }
+      const transcription = await this._speechRecognition.transcribe(voice);
+      effectiveText = transcription.text;
+      sttMetadata = transcription;
+    }
+
+    if (image && !this._vision) {
+      throw new Error('PersonaCore: image input requires useVision() to be enabled.');
+    }
+
+    // 2. Retrieve recent history for this user (FR-12, FR-18).
+    const history = await this._memory.getRecentHistoryForModel(userId);
+    const contents = this._buildContents(history, effectiveText, image);
+
+    // 3. Generate the conversational reply.
+    const reply = await this._gemini.generateReply(contents);
+
+    // 4. Persist both turns (FR-13). The stored user turn is always text —
+    //    the transcription if voice was used, or the raw text otherwise (FR-30).
+    await this._memory.saveMessage(userId, { role: 'user', text: effectiveText || '' });
+    await this._memory.saveMessage(userId, { role: 'model', text: reply.text });
+
+    // 5. Optionally generate voice output (NFR-1: skipped entirely if disabled).
+    let voiceOutputResult = null;
+    if (this._voiceOutput && this._voiceOutput.shouldGenerateAudio()) {
+      voiceOutputResult = await this._voiceOutput.generate(reply.text);
+    }
+
+    return this._buildResponse({
+      reply,
+      sttMetadata,
+      voiceOutputResult,
+      startTime,
+    });
+  }
+
+  /**
+   * Retrieves a user's conversation history (FR-19 through FR-21).
+   * @param {string} userId
+   * @param {{limit?: number}} [options]
+   */
+  async getHistory(userId, options = {}) {
+    if (!userId || typeof userId !== 'string') {
+      throw new Error('PersonaCore: getHistory() requires a valid userId.');
+    }
+    return this._memory.getHistory(userId, options.limit);
+  }
+
+  /**
+   * Deletes a user's conversation history (FR-22 through FR-24).
+   * @param {string} userId
+   * @param {{limit?: number}} [options]
+   */
+  async deleteHistory(userId, options = {}) {
+    if (!userId || typeof userId !== 'string') {
+      throw new Error('PersonaCore: deleteHistory() requires a valid userId.');
+    }
+    return this._memory.deleteHistory(userId, options.limit);
+  }
+
+  // ---------------------------------------------------------------------
+  // Internal helpers
+  // ---------------------------------------------------------------------
+
+  /** @private */
+  _validateHandleMessageRequest(request) {
+    if (!request || typeof request !== 'object') {
+      throw new Error('PersonaCore: handleMessage() requires a request object.');
+    }
+    if (!request.userId || typeof request.userId !== 'string') {
+      throw new Error('PersonaCore: handleMessage() requires a "userId" string.');
+    }
+    if (!request.text && !request.image && !request.voice) {
+      throw new Error('PersonaCore: handleMessage() requires at least one of "text", "image", or "voice".');
+    }
+    if (request.image !== undefined && !Buffer.isBuffer(request.image)) {
+      throw new Error('PersonaCore: "image" must be a Buffer.');
+    }
+    if (request.voice !== undefined && !Buffer.isBuffer(request.voice)) {
+      throw new Error('PersonaCore: "voice" must be a Buffer.');
+    }
+    if (request.text !== undefined && typeof request.text !== 'string') {
+      throw new Error('PersonaCore: "text" must be a string.');
+    }
+  }
+
+  /**
+   * Builds the Gemini `contents` array from prior history plus the current turn.
+   * @private
+   */
+  _buildContents(history, text, image) {
+    const contents = history.map((msg) => ({
+      role: msg.role,
+      parts: [{ text: msg.text }],
+    }));
+
+    const currentParts = [];
+    if (text) {
+      currentParts.push({ text });
+    }
+    if (image) {
+      currentParts.push(this._vision.buildImagePart(image));
+    }
+
+    contents.push({ role: 'user', parts: currentParts });
+    return contents;
+  }
+
+  /**
+   * Assembles the final response object returned from handleMessage() (NFR-14).
+   * @private
+   */
+  _buildResponse({ reply, sttMetadata, voiceOutputResult, startTime }) {
+    const responseTime = Date.now() - startTime;
+
+    // Prefer the voice output call's key-rotation info if audio was generated
+    // this turn (it's the last Gemini call made), otherwise the reply's.
+    const rotationSource = voiceOutputResult || reply;
+
+    const metadata = {
+      tokenUsage: reply.usageMetadata || {},
+      apiKeyIndex: rotationSource.apiKeyIndex,
+      rotated: rotationSource.rotated,
+      keysTriedThisRequest: rotationSource.keysTriedThisRequest,
+      responseTime,
+      finishReason: reply.finishReason,
+      historyLimit: this._historyLimit,
+      model: {
+        text: defaults.MODELS.TEXT_AND_VISION,
+        speechRecognition: this._speechRecognition ? defaults.MODELS.SPEECH_RECOGNITION : null,
+        voiceOutput: this._voiceOutput ? defaults.MODELS.VOICE_OUTPUT : null,
+      },
+    };
+
+    const response = { metadata };
+
+    if (voiceOutputResult) {
+      response.audio = voiceOutputResult.audioBuffer;
+      if (this._voiceOutput.shouldIncludeText()) {
+        response.text = reply.text;
+      }
+    } else {
+      response.text = reply.text;
+    }
+
+    return response;
+  }
+}
+
+module.exports = AI;
