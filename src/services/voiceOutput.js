@@ -4,8 +4,7 @@ const defaults = require('../config/defaults');
 const { pcmToOggOpus, parseSampleRate } = require('../utils/audioTranscoder');
 
 /**
- * Voice output feature service. Enabled via ai.useVoiceOutput() (FR-31
- * through FR-35).
+ * Voice output feature service. Enabled via ai.useVoiceOutput().
  *
  * `probability` gates whether audio is generated at all for a given
  * response: a random roll against the configured probability decides

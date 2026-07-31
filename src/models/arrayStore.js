@@ -3,11 +3,11 @@
 /**
  * In-memory conversation history store.
  *
- * Default storage backend (ADR-005). History is kept in a Map keyed by
+ * Default storage backend. History is kept in a Map keyed by
  * userId, scoped to this store instance (and therefore to the AI instance
- * that owns it), satisfying FR-11 (independent per-user history).
+ * that owns it), satisfying (independent per-user history).
  *
- * Message format (must match MongoStore, per NFR-15):
+ * Message format (must match MongoStore):
  * { role: 'user' | 'model', text: string, createdAt: Date }
  */
 class ArrayStore {
@@ -60,7 +60,7 @@ class ArrayStore {
 
   /**
    * Delete a user's history, optionally limited to the most recent N messages.
-   * Without a limit, deletes the entire history (FR-24).
+   * Without a limit, deletes the entire history.
    * @param {string} userId
    * @param {number} [limit] - Number of most recent messages to delete.
    */

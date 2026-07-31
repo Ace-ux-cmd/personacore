@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Vision feature service. Enabled via ai.useVision() (FR-25, FR-26).
+ * Vision feature service. Enabled via ai.useVision().
  *
  * Responsible only for building the Gemini-compatible content part for an
  * image buffer. Image bytes are passed through as-is; any error while

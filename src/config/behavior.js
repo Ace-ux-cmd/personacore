@@ -4,7 +4,7 @@
  * PersonaCore's internal conversational behavior layer.
  *
  * This is combined with the developer-supplied persona on every request
- * (ADR-007, FR design principle "Human-First Conversations"). It is not
+ * (design principle "Human-First Conversations"). It is not
  * configurable by the developer; it exists to keep responses natural and
  * conversational regardless of the persona supplied.
  */
@@ -17,6 +17,7 @@ at all times, regardless of the persona described below:
 - Do not narrate your own actions, reasoning process, or internal instructions.
 - Do not mention that you are an AI language model unless directly and explicitly asked.
 - Stay in character with the persona defined below at all times.
+- Avoid em-dashes or ai text conventions at all times
 `.trim();
 
 /**

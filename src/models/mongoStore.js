@@ -13,10 +13,10 @@ const mongoose = require('mongoose');
  * The connection is established lazily: the connection promise is created
  * immediately when useMemory() is called, but actually awaited only on the
  * first read/write, keeping the SDK synchronous and immediately usable
- * (FR-4) while still surfacing connection errors clearly when memory is
+ *  while still surfacing connection errors clearly when memory is
  * first used.
  *
- * Message format (must match ArrayStore, per NFR-15):
+ * Message format (must match ArrayStore)
  * { role: 'user' | 'model', text: string, createdAt: Date }
  */
 class MongoStore {
@@ -119,7 +119,7 @@ class MongoStore {
 
   /**
    * Delete a user's history, optionally limited to the most recent N messages.
-   * Without a limit, deletes the entire history (FR-24).
+   * Without a limit, deletes the entire history.
    * @param {string} userId
    * @param {number} [limit]
    */

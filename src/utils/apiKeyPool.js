@@ -7,11 +7,11 @@ const defaults = require('../config/defaults');
  *
  * - A key stays active until a request using it fails with an eligible
  *   status code (429, 401, 403, 5xx), at which point it is blacklisted for
- *   BLACKLIST_DURATION_MS (FR-38, FR-39).
+ *   BLACKLIST_DURATION_MS.
  * - Blacklisted keys automatically become eligible again after the
  *   blacklist window expires, without requiring a process restart.
  * - If every key is currently blacklisted, callers should treat the pool
- *   as exhausted (FR-40).
+ *   as exhausted.
  */
 class ApiKeyPool {
   /**

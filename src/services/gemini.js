@@ -9,7 +9,7 @@ const { buildSystemInstruction } = require('../config/behavior');
 /**
  * Handles all communication with the Gemini API: building requests,
  * injecting the persona and internal behavior layer, and managing
- * automatic API key failover (FR-36 through FR-40).
+ * automatic API key failover.
  */
 class GeminiService {
   /**

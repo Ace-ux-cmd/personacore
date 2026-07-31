@@ -21,7 +21,7 @@ class MemoryService {
   }
 
   /**
-   * Switches the active backend to MongoDB. Connects lazily (FR-15, ADR-005).
+   * Switches the active backend to MongoDB. Connects lazily.
    * @param {string} mongoUri
    * @param {string} collectionName
    */
@@ -31,7 +31,7 @@ class MemoryService {
 
   /**
    * Retrieves conversation history for a user, respecting the configured
-   * historyLimit unless an explicit limit is provided (FR-12, NFR-3).
+   * historyLimit unless an explicit limit is provided.
    * @param {string} userId
    * @param {number} [limit]
    */
@@ -42,7 +42,7 @@ class MemoryService {
 
   /**
    * Retrieves only the most recent `historyLimit` messages, for use when
-   * building the context sent to Gemini (FR-18).
+   * building the context sent to Gemini.
    * @param {string} userId
    */
   async getRecentHistoryForModel(userId) {
@@ -50,7 +50,7 @@ class MemoryService {
   }
 
   /**
-   * Saves a single message (user or model turn) to history (FR-13).
+   * Saves a single message (user or model turn) to history.
    * @param {string} userId
    * @param {{role: string, text: string}} message
    */
@@ -59,7 +59,7 @@ class MemoryService {
   }
 
   /**
-   * Deletes conversation history for a user (FR-22 through FR-24).
+   * Deletes conversation history for a user.
    * @param {string} userId
    * @param {number} [limit]
    */

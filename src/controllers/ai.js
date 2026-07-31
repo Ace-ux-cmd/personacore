@@ -14,7 +14,7 @@ const defaults = require('../config/defaults');
  *
  * Coordinates the feature services (memory, vision, speech recognition,
  * voice output) and the Gemini service, but contains no Gemini-specific
- * or storage-specific logic itself (NFR-8, NFR-9): it only orchestrates.
+ * or storage-specific logic itself: it only orchestrates.
  */
 class AI {
   /**
@@ -43,14 +43,14 @@ class AI {
     this._memory = new MemoryService(historyLimit);
     this._historyLimit = typeof historyLimit === 'number' ? historyLimit : defaults.HISTORY_LIMIT;
 
-    // Optional feature services; null until explicitly enabled (NFR-1, NFR-11).
+    // Optional feature services; null until explicitly enabled.
     this._vision = null;
     this._speechRecognition = null;
     this._voiceOutput = null;
   }
 
   /**
-   * Enables persistent conversation history via MongoDB (FR-15).
+   * Enables persistent conversation history via MongoDB.
    * @param {string} mongoUri
    */
   useMemory(mongoUri) {
@@ -62,21 +62,21 @@ class AI {
   }
 
   /**
-   * Enables image understanding (FR-25, FR-26).
+   * Enables image understanding.
    */
   useVision() {
     this._vision = new VisionService();
   }
 
   /**
-   * Enables voice input transcription (FR-27, FR-28).
+   * Enables voice input transcription.
    */
   useSpeechRecognition() {
     this._speechRecognition = new SpeechRecognitionService(this._gemini);
   }
 
   /**
-   * Enables voice output generation (FR-31, FR-32).
+   * Enables voice output generation.
    * @param {{includeText?: boolean, probability?: number}} [options]
    */
   useVoiceOutput(options = {}) {
@@ -89,7 +89,7 @@ class AI {
       throw new Error('PersonaCore: "includeText" must be a boolean.');
     }
 
-    // Resolve the default probability based on includeText (FR-34, FR-35)
+    // Resolve the default probability based on includeText
     // only when the caller didn't explicitly provide one.
     const includeText = options.includeText === true;
     const probability =
@@ -103,7 +103,7 @@ class AI {
   }
 
   /**
-   * Processes a conversation request (FR-5 through FR-10).
+   * Processes a conversation request.
    *
    * @param {{userId: string, text?: string, image?: Buffer, voice?: Buffer}} request
    * @returns {Promise<object>} Response object; shape depends on enabled features.
@@ -114,7 +114,7 @@ class AI {
     this._validateHandleMessageRequest(request);
     const { userId, text, image, voice } = request;
 
-    // 1. Resolve the effective text input, transcribing voice first if present (FR-29).
+    // 1. Resolve the effective text input, transcribing voice first if present.
     let effectiveText = text;
     let sttMetadata = null;
 
@@ -131,19 +131,19 @@ class AI {
       throw new Error('PersonaCore: image input requires useVision() to be enabled.');
     }
 
-    // 2. Retrieve recent history for this user (FR-12, FR-18).
+    // 2. Retrieve recent history for this user.
     const history = await this._memory.getRecentHistoryForModel(userId);
     const contents = this._buildContents(history, effectiveText, image);
 
     // 3. Generate the conversational reply.
     const reply = await this._gemini.generateReply(contents);
 
-    // 4. Persist both turns (FR-13). The stored user turn is always text —
-    //    the transcription if voice was used, or the raw text otherwise (FR-30).
+    // 4. Persist both turns. The stored user turn is always text -
+    //    the transcription if voice was used, or the raw text otherwise .
     await this._memory.saveMessage(userId, { role: 'user', text: effectiveText || '' });
     await this._memory.saveMessage(userId, { role: 'model', text: reply.text });
 
-    // 5. Optionally generate voice output (NFR-1: skipped entirely if disabled).
+    // 5. Optionally generate voice output (skipped entirely if disabled).
     let voiceOutputResult = null;
     if (this._voiceOutput && this._voiceOutput.shouldGenerateAudio()) {
       voiceOutputResult = await this._voiceOutput.generate(reply.text);
@@ -158,7 +158,7 @@ class AI {
   }
 
   /**
-   * Retrieves a user's conversation history (FR-19 through FR-21).
+   * Retrieves a user's conversation history.
    * @param {string} userId
    * @param {{limit?: number}} [options]
    */
@@ -170,7 +170,7 @@ class AI {
   }
 
   /**
-   * Deletes a user's conversation history (FR-22 through FR-24).
+   * Deletes a user's conversation history.
    * @param {string} userId
    * @param {{limit?: number}} [options]
    */
@@ -230,7 +230,7 @@ class AI {
   }
 
   /**
-   * Assembles the final response object returned from handleMessage() (NFR-14).
+   * Assembles the final response object returned from handleMessage().
    * @private
    */
   _buildResponse({ reply, sttMetadata, voiceOutputResult, startTime }) {

@@ -2,8 +2,8 @@
 
 /**
  * Speech recognition feature service. Enabled via ai.useSpeechRecognition()
- * (FR-27, FR-28). Voice input is transcribed before conversation processing
- * (FR-29); only the transcription is stored in history (FR-30, ADR-008).
+ * Voice input is transcribed before conversation processing
+ * only the transcription is stored in history.
  */
 class SpeechRecognitionService {
   /**
