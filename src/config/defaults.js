@@ -13,7 +13,7 @@ module.exports = {
     INCLUDE_TEXT: false,
     PROBABILITY_VOICE_ONLY: 1.0,
     PROBABILITY_VOICE_AND_TEXT: 0.5,
-    TTS_VOICE_NAME: 'Kore',
+    TTS_VOICE_NAME: 'Leda',
     OUTPUT_MIME_TYPE: 'audio/ogg',
   },
 

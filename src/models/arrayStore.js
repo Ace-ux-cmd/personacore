@@ -11,9 +11,14 @@
  * { role: 'user' | 'model', text: string, createdAt: Date }
  */
 class ArrayStore {
-  constructor() {
+  constructor(historyLimit) {
     /** @type {Map<string, Array<{role: string, text: string, createdAt: Date}>>} */
+    if(historyLimit < 1){
+      throw new Error("History limit must be greater than 0");
+    }
     this._histories = new Map();
+    this._historyLimit = historyLimit;
+    
   }
 
   /**
@@ -35,7 +40,8 @@ class ArrayStore {
       text: message.text,
       createdAt: new Date(),
     });
-    this._histories.set(userId, history);
+    const trimmed = history.length > this._historyLimit ? history.slice(history.length - this._historyLimit) : history;
+    this._histories.set(userId, trimmed);
   }
 
   /**

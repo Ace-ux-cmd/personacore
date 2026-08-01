@@ -42,19 +42,27 @@ class VoiceOutputService {
     return this._includeText;
   }
 
-  /**
+/**
    * Generates OGG/Opus audio for the given text via Gemini TTS.
    * @param {string} text
-   * @returns {Promise<{audioBuffer: Buffer, mimeType: string, apiKeyIndex: number, keysTriedThisRequest: number, rotated: boolean}>}
+   * @returns {Promise<object>} On success: {success: true, audioBuffer,
+   *   mimeType, apiKeyIndex, keysTriedThisRequest, rotated}. On failure:
+   *   {success: false, error, metadata} (passed through from synthesizeSpeech).
    */
   async generate(text) {
-    const { audioBuffer, mimeType, apiKeyIndex, keysTriedThisRequest, rotated } =
-      await this._gemini.synthesizeSpeech(text);
+    const result = await this._gemini.synthesizeSpeech(text);
+
+    if (!result.success) {
+      return result;
+    }
+
+    const { audioBuffer, mimeType, apiKeyIndex, keysTriedThisRequest, rotated } = result;
 
     const sampleRate = parseSampleRate(mimeType);
     const oggOpusBuffer = await pcmToOggOpus(audioBuffer, sampleRate);
 
     return {
+      success: true,
       audioBuffer: oggOpusBuffer,
       mimeType: defaults.VOICE_OUTPUT.OUTPUT_MIME_TYPE,
       apiKeyIndex,

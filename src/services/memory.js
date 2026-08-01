@@ -17,7 +17,7 @@ class MemoryService {
   constructor(historyLimit) {
     this._historyLimit =
       typeof historyLimit === 'number' && historyLimit > 0 ? historyLimit : defaults.HISTORY_LIMIT;
-    this._store = new ArrayStore();
+    this._store = new ArrayStore(this._historyLimit);
   }
 
   /**
@@ -25,8 +25,8 @@ class MemoryService {
    * @param {string} mongoUri
    * @param {string} collectionName
    */
-  useMongo(mongoUri, collectionName) {
-    this._store = new MongoStore(mongoUri, collectionName);
+  useMongo(mongoUri, collectionName,) {
+    this._store = new MongoStore(mongoUri, collectionName, this._historyLimit);
   }
 
   /**
@@ -41,12 +41,12 @@ class MemoryService {
   }
 
   /**
-   * Retrieves only the most recent `historyLimit` messages, for use when
+   * Retrieves full history for a user messages, for use when
    * building the context sent to Gemini.
    * @param {string} userId
    */
   async getRecentHistoryForModel(userId) {
-    return this._store.getHistory(userId, this._historyLimit);
+    return this._store.getHistory(userId);
   }
 
   /**

@@ -24,11 +24,14 @@ class MongoStore {
    * @param {string} uri - MongoDB connection string.
    * @param {string} collectionName - Unique collection name for this instance.
    */
-  constructor(uri, collectionName) {
+  constructor(uri, collectionName, historyLimit) {
     if (!uri || typeof uri !== 'string') {
       throw new Error('MongoStore: a valid MongoDB connection string is required.');
     }
-
+   if(historyLimit < 1){
+      throw new Error("History limit must be greater than 0");
+    }
+    this._historyLimit = historyLimit;
     this._collectionName = collectionName;
     this._connection = mongoose.createConnection(uri);
     this._model = null;
@@ -88,6 +91,17 @@ class MongoStore {
       role: message.role,
       text: message.text,
     });
+
+    const excessDocs = await Model.find({userId})
+    .sort({createdAt: -1})
+    .skip(this._historyLimit)
+    .select('id')
+    .lean();
+
+    if(excessDocs.length > 0){
+      const idsToDelete = excessDocs.map(doc => doc._id);
+      await Model.deleteMany({_id: {$in: idsToDelete}});
+    }
   }
 
   /**

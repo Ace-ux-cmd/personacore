@@ -3,7 +3,7 @@
 const { GoogleGenAI } = require('@google/genai');
 const defaults = require('../config/defaults');
 const ApiKeyPool = require('../utils/apiKeyPool');
-const { isRotatableFailure } = require('../utils/errorClassification');
+const { isRotatableFailure, classifyErrorCode } = require('../utils/errorClassification');
 const { buildSystemInstruction } = require('../config/behavior');
 
 /**
@@ -42,16 +42,26 @@ class GeminiService {
    * @returns {Promise<{response: object, apiKeyIndex: number, keysTriedThisRequest: number, rotated: boolean}>}
    * @private
    */
+  
   async _generateWithFailover(params) {
     const eligibleKeys = this._keyPool.getEligibleKeys();
 
     if (eligibleKeys.length === 0) {
-      throw new Error(
-        'PersonaCore: all configured Gemini API keys are currently unavailable (rate limited or blacklisted). Try again later.'
-      );
+      return {
+        success: false,
+        error: {
+          code: 'ALL_KEYS_UNAVAILABLE',
+          message: 'All configured Gemini API keys are currently unavailable (rate limited or blacklisted).',
+        },
+        metadata: {
+          keyIndex: null,
+          model: params.model,
+        },
+      };
     }
 
-    let lastError = null;
+    let lastErr = null;
+    let lastIndex = null;
     let keysTried = 0;
 
     for (const { index } of eligibleKeys) {
@@ -61,27 +71,50 @@ class GeminiService {
       try {
         const response = await client.models.generateContent(params);
         return {
+          success: true,
           response,
           apiKeyIndex: index,
           keysTriedThisRequest: keysTried,
           rotated: keysTried > 1,
         };
       } catch (err) {
+        lastErr = err;
+        lastIndex = index;
+
         if (!isRotatableFailure(err)) {
-          throw new Error(`PersonaCore: Gemini request failed. ${err.message}`);
+          return {
+            success: false,
+            error: {
+              code: classifyErrorCode(err),
+              message: err.message,
+            },
+            metadata: {
+              keyIndex: index,
+              model: params.model,
+            },
+          };
         }
 
         this._keyPool.blacklist(index);
-        lastError = err;
         // Continue to the next eligible key.
       }
     }
 
-    throw new Error(
-      `PersonaCore: all available Gemini API keys failed for this request. Last error: ${lastError ? lastError.message : 'unknown'}`
-    );
+    return {
+      success: false,
+      error: {
+        code: lastErr ? classifyErrorCode(lastErr) : 'UNKNOWN_ERROR',
+        message: lastErr
+          ? `All available Gemini API keys failed for this request. Last error: ${lastErr.message}`
+          : 'All available Gemini API keys failed for this request.',
+      },
+      metadata: {
+        keyIndex: lastIndex,
+        model: params.model,
+      },
+    };
   }
-
+  
   /**
    * Generates a conversational text/vision response.
    *
@@ -90,8 +123,9 @@ class GeminiService {
    *   latest user turn.
    * @returns {Promise<{text: string, usageMetadata: object, finishReason: string, apiKeyIndex: number, keysTriedThisRequest: number, rotated: boolean}>}
    */
+
   async generateReply(contents) {
-    const { response, apiKeyIndex, keysTriedThisRequest, rotated } = await this._generateWithFailover({
+    const result = await this._generateWithFailover({
       model: defaults.MODELS.TEXT_AND_VISION,
       contents,
       config: {
@@ -99,9 +133,15 @@ class GeminiService {
       },
     });
 
+    if (!result.success) {
+      return result;
+    }
+
+    const { response, apiKeyIndex, keysTriedThisRequest, rotated } = result;
     const candidate = response.candidates && response.candidates[0];
 
     return {
+      success: true,
       text: response.text || '',
       usageMetadata: response.usageMetadata || null,
       finishReason: candidate ? candidate.finishReason : null,
@@ -118,8 +158,9 @@ class GeminiService {
    * @param {string} mimeType
    * @returns {Promise<{text: string, apiKeyIndex: number, keysTriedThisRequest: number, rotated: boolean}>}
    */
+  
   async transcribeAudio(audioBuffer, mimeType) {
-    const { response, apiKeyIndex, keysTriedThisRequest, rotated } = await this._generateWithFailover({
+    const result = await this._generateWithFailover({
       model: defaults.MODELS.SPEECH_RECOGNITION,
       contents: [
         {
@@ -132,7 +173,14 @@ class GeminiService {
       ],
     });
 
+    if (!result.success) {
+      return result;
+    }
+
+    const { response, apiKeyIndex, keysTriedThisRequest, rotated } = result;
+
     return {
+      success: true,
       text: (response.text || '').trim(),
       apiKeyIndex,
       keysTriedThisRequest,
@@ -147,8 +195,9 @@ class GeminiService {
    * @param {string} text
    * @returns {Promise<{audioBuffer: Buffer, mimeType: string, apiKeyIndex: number, keysTriedThisRequest: number, rotated: boolean}>}
    */
-  async synthesizeSpeech(text) {
-    const { response, apiKeyIndex, keysTriedThisRequest, rotated } = await this._generateWithFailover({
+
+async synthesizeSpeech(text) {
+    const result = await this._generateWithFailover({
       model: defaults.MODELS.VOICE_OUTPUT,
       contents: [{ role: 'user', parts: [{ text }] }],
       config: {
@@ -161,16 +210,27 @@ class GeminiService {
       },
     });
 
+    if (!result.success) {
+      return result;
+    }
+
+    const { response, apiKeyIndex, keysTriedThisRequest, rotated } = result;
+
     const parts = response.candidates && response.candidates[0] && response.candidates[0].content
       ? response.candidates[0].content.parts
       : [];
     const audioPart = (parts || []).find((part) => part.inlineData && part.inlineData.mimeType);
 
     if (!audioPart) {
-      throw new Error('PersonaCore: Gemini TTS did not return audio data.');
+      return {
+        success: false,
+        error: { code: 'NO_AUDIO_RETURNED', message: 'Gemini TTS did not return audio data.' },
+        metadata: { keyIndex: apiKeyIndex, model: defaults.MODELS.VOICE_OUTPUT },
+      };
     }
 
     return {
+      success: true,
       audioBuffer: Buffer.from(audioPart.inlineData.data, 'base64'),
       mimeType: audioPart.inlineData.mimeType,
       apiKeyIndex,

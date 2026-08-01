@@ -21,4 +21,21 @@ function isRotatableFailure(err) {
   return defaults.GEMINI_KEY_FAILURE.ROTATE_ON_STATUS.includes(status);
 }
 
-module.exports = { isRotatableFailure };
+/**
+ * Maps a Gemini API error to a short, stable error code for the
+ * { success: false, error: { code, message } } response shape.
+ *
+ * @param {unknown} err
+ * @returns {string}
+ */
+function classifyErrorCode(err) {
+  const status = err && typeof err.status === 'number' ? err.status : null;
+
+  if (status === null) return 'NETWORK_ERROR';
+  if (status === 429) return 'RATE_LIMIT';
+  if (status === 401 || status === 403) return 'AUTH_ERROR';
+  if (status >= 500) return 'UPSTREAM_ERROR';
+  return 'REQUEST_ERROR';
+}
+
+module.exports = { isRotatableFailure, classifyErrorCode };

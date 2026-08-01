@@ -1,13 +1,11 @@
-'use strict';
+"use strict";
 
-const { randomUUID } = require('crypto');
-
-const GeminiService = require('../services/gemini');
-const MemoryService = require('../services/memory');
-const VisionService = require('../services/vision');
-const SpeechRecognitionService = require('../services/speechRecognition');
-const VoiceOutputService = require('../services/voiceOutput');
-const defaults = require('../config/defaults');
+const GeminiService = require("../services/gemini");
+const MemoryService = require("../services/memory");
+const VisionService = require("../services/vision");
+const SpeechRecognitionService = require("../services/speechRecognition");
+const VoiceOutputService = require("../services/voiceOutput");
+const defaults = require("../config/defaults");
 
 /**
  * PersonaCore's main entry point.
@@ -21,27 +19,39 @@ class AI {
    * @param {{apiKeys: string[], persona: string, historyLimit?: number}} config
    */
   constructor(config) {
-    if (!config || typeof config !== 'object') {
-      throw new Error('PersonaCore: a configuration object is required.');
+    if (!config || typeof config !== "object") {
+      throw new Error("PersonaCore: a configuration object is required.");
     }
 
     const { apiKeys, persona, historyLimit } = config;
 
-    if (!Array.isArray(apiKeys) || apiKeys.length === 0 || apiKeys.some((k) => typeof k !== 'string' || !k)) {
-      throw new Error('PersonaCore: "apiKeys" must be a non-empty array of Gemini API key strings.');
+    if (
+      !Array.isArray(apiKeys) ||
+      apiKeys.length === 0 ||
+      apiKeys.some((k) => typeof k !== "string" || !k)
+    ) {
+      throw new Error(
+        'PersonaCore: "apiKeys" must be a non-empty array of Gemini API key strings.',
+      );
     }
 
-    if (!persona || typeof persona !== 'string') {
-      throw new Error('PersonaCore: "persona" is required and must be a string.');
+    if (!persona || typeof persona !== "string") {
+      throw new Error(
+        'PersonaCore: "persona" is required and must be a string.',
+      );
     }
 
-    if (historyLimit !== undefined && (typeof historyLimit !== 'number' || historyLimit <= 0)) {
+    if (
+      historyLimit !== undefined &&
+      (typeof historyLimit !== "number" || historyLimit <= 0)
+    ) {
       throw new Error('PersonaCore: "historyLimit" must be a positive number.');
     }
 
     this._gemini = new GeminiService(apiKeys, persona);
     this._memory = new MemoryService(historyLimit);
-    this._historyLimit = typeof historyLimit === 'number' ? historyLimit : defaults.HISTORY_LIMIT;
+    this._historyLimit =
+      typeof historyLimit === "number" ? historyLimit : defaults.HISTORY_LIMIT;
 
     // Optional feature services; null until explicitly enabled.
     this._vision = null;
@@ -54,10 +64,12 @@ class AI {
    * @param {string} mongoUri
    */
   useMemory(mongoUri) {
-    if (!mongoUri || typeof mongoUri !== 'string') {
-      throw new Error('PersonaCore: useMemory() requires a valid MongoDB connection string.');
+    if (!mongoUri || typeof mongoUri !== "string") {
+      throw new Error(
+        "PersonaCore: useMemory() requires a valid MongoDB connection string.",
+      );
     }
-    const collectionName = `personacore_history_${randomUUID()}`;
+    const collectionName = `personacore_history`;
     this._memory.useMongo(mongoUri, collectionName);
   }
 
@@ -81,11 +93,20 @@ class AI {
    */
   useVoiceOutput(options = {}) {
     if (options.probability !== undefined) {
-      if (typeof options.probability !== 'number' || options.probability < 0 || options.probability > 1) {
-        throw new Error('PersonaCore: "probability" must be a number between 0 and 1.');
+      if (
+        typeof options.probability !== "number" ||
+        options.probability < 0 ||
+        options.probability > 1
+      ) {
+        throw new Error(
+          'PersonaCore: "probability" must be a number between 0 and 1.',
+        );
       }
     }
-    if (options.includeText !== undefined && typeof options.includeText !== 'boolean') {
+    if (
+      options.includeText !== undefined &&
+      typeof options.includeText !== "boolean"
+    ) {
       throw new Error('PersonaCore: "includeText" must be a boolean.');
     }
 
@@ -99,7 +120,10 @@ class AI {
           ? defaults.VOICE_OUTPUT.PROBABILITY_VOICE_AND_TEXT
           : defaults.VOICE_OUTPUT.PROBABILITY_VOICE_ONLY;
 
-    this._voiceOutput = new VoiceOutputService(this._gemini, { probability, includeText });
+    this._voiceOutput = new VoiceOutputService(this._gemini, {
+      probability,
+      includeText,
+    });
   }
 
   /**
@@ -114,13 +138,15 @@ class AI {
     this._validateHandleMessageRequest(request);
     const { userId, text, image, voice } = request;
 
-    // 1. Resolve the effective text input, transcribing voice first if present.
+    // - Resolve the effective text input, transcribing voice first if present.
     let effectiveText = text;
     let sttMetadata = null;
 
     if (voice) {
       if (!this._speechRecognition) {
-        throw new Error('PersonaCore: voice input requires useSpeechRecognition() to be enabled.');
+        throw new Error(
+          "PersonaCore: voice input requires useSpeechRecognition() to be enabled.",
+        );
       }
       const transcription = await this._speechRecognition.transcribe(voice);
       effectiveText = transcription.text;
@@ -128,25 +154,52 @@ class AI {
     }
 
     if (image && !this._vision) {
-      throw new Error('PersonaCore: image input requires useVision() to be enabled.');
+      throw new Error(
+        "PersonaCore: image input requires useVision() to be enabled.",
+      );
     }
 
-    // 2. Retrieve recent history for this user.
+    // - Retrieve recent history for this user.
     const history = await this._memory.getRecentHistoryForModel(userId);
     const contents = this._buildContents(history, effectiveText, image);
 
-    // 3. Generate the conversational reply.
+    //- Generate the conversational reply.
     const reply = await this._gemini.generateReply(contents);
 
-    // 4. Persist both turns. The stored user turn is always text -
-    //    the transcription if voice was used, or the raw text otherwise .
-    await this._memory.saveMessage(userId, { role: 'user', text: effectiveText || '' });
-    await this._memory.saveMessage(userId, { role: 'model', text: reply.text });
+    if (!reply.success) {
+      // Nothing is persisted to history on failure, there's no model
+      // turn to save, and re-saving the user's turn alone would desync
+      // user/model pairs in history.
+      return {
+        success: false,
+        error: reply.error,
+        metadata: { ...reply.metadata, responseTime: Date.now() - startTime },
+      };
+    }
 
-    // 5. Optionally generate voice output (skipped entirely if disabled).
+    // - Persist both turns, The stored user turn is always text,
+    //    the transcription if voice was used, or the raw text otherwise.
+    await this._memory.saveMessage(userId, {
+      role: "user",
+      text: effectiveText || "",
+    });
+    await this._memory.saveMessage(userId, { role: "model", text: reply.text });
+
+    // 5. Optionally generate voice output.
     let voiceOutputResult = null;
     if (this._voiceOutput && this._voiceOutput.shouldGenerateAudio()) {
       voiceOutputResult = await this._voiceOutput.generate(reply.text);
+
+      if (!voiceOutputResult.success) {
+        return {
+          success: false,
+          error: voiceOutputResult.error,
+          metadata: {
+            ...voiceOutputResult.metadata,
+            responseTime: Date.now() - startTime,
+          },
+        };
+      }
     }
 
     return this._buildResponse({
@@ -163,8 +216,8 @@ class AI {
    * @param {{limit?: number}} [options]
    */
   async getHistory(userId, options = {}) {
-    if (!userId || typeof userId !== 'string') {
-      throw new Error('PersonaCore: getHistory() requires a valid userId.');
+    if (!userId || typeof userId !== "string") {
+      throw new Error("PersonaCore: getHistory() requires a valid userId.");
     }
     return this._memory.getHistory(userId, options.limit);
   }
@@ -175,8 +228,8 @@ class AI {
    * @param {{limit?: number}} [options]
    */
   async deleteHistory(userId, options = {}) {
-    if (!userId || typeof userId !== 'string') {
-      throw new Error('PersonaCore: deleteHistory() requires a valid userId.');
+    if (!userId || typeof userId !== "string") {
+      throw new Error("PersonaCore: deleteHistory() requires a valid userId.");
     }
     return this._memory.deleteHistory(userId, options.limit);
   }
@@ -187,14 +240,20 @@ class AI {
 
   /** @private */
   _validateHandleMessageRequest(request) {
-    if (!request || typeof request !== 'object') {
-      throw new Error('PersonaCore: handleMessage() requires a request object.');
+    if (!request || typeof request !== "object") {
+      throw new Error(
+        "PersonaCore: handleMessage() requires a request object.",
+      );
     }
-    if (!request.userId || typeof request.userId !== 'string') {
-      throw new Error('PersonaCore: handleMessage() requires a "userId" string.');
+    if (!request.userId || typeof request.userId !== "string") {
+      throw new Error(
+        'PersonaCore: handleMessage() requires a "userId" string.',
+      );
     }
     if (!request.text && !request.image && !request.voice) {
-      throw new Error('PersonaCore: handleMessage() requires at least one of "text", "image", or "voice".');
+      throw new Error(
+        'PersonaCore: handleMessage() requires at least one of "text", "image", or "voice".',
+      );
     }
     if (request.image !== undefined && !Buffer.isBuffer(request.image)) {
       throw new Error('PersonaCore: "image" must be a Buffer.');
@@ -202,7 +261,7 @@ class AI {
     if (request.voice !== undefined && !Buffer.isBuffer(request.voice)) {
       throw new Error('PersonaCore: "voice" must be a Buffer.');
     }
-    if (request.text !== undefined && typeof request.text !== 'string') {
+    if (request.text !== undefined && typeof request.text !== "string") {
       throw new Error('PersonaCore: "text" must be a string.');
     }
   }
@@ -225,7 +284,7 @@ class AI {
       currentParts.push(this._vision.buildImagePart(image));
     }
 
-    contents.push({ role: 'user', parts: currentParts });
+    contents.push({ role: "user", parts: currentParts });
     return contents;
   }
 
@@ -250,12 +309,14 @@ class AI {
       historyLimit: this._historyLimit,
       model: {
         text: defaults.MODELS.TEXT_AND_VISION,
-        speechRecognition: this._speechRecognition ? defaults.MODELS.SPEECH_RECOGNITION : null,
+        speechRecognition: this._speechRecognition
+          ? defaults.MODELS.SPEECH_RECOGNITION
+          : null,
         voiceOutput: this._voiceOutput ? defaults.MODELS.VOICE_OUTPUT : null,
       },
     };
 
-    const response = { metadata };
+    const response = { success: true, metadata };
 
     if (voiceOutputResult) {
       response.audio = voiceOutputResult.audioBuffer;
