@@ -1,7 +1,7 @@
-'use strict';
+"use strict";
 
-const { spawn } = require('child_process');
-const ffmpegPath = require('ffmpeg-static');
+const { spawn } = require("child_process");
+const ffmpegPath = require("ffmpeg-static");
 
 /**
  * Transcodes raw PCM audio (as returned by Gemini TTS: 16-bit signed LE,
@@ -16,13 +16,19 @@ const ffmpegPath = require('ffmpeg-static');
 function pcmToOggOpus(pcmBuffer, sampleRateHz) {
   return new Promise((resolve, reject) => {
     const args = [
-      '-f', 's16le',
-      '-ar', String(sampleRateHz),
-      '-ac', '1',
-      '-i', 'pipe:0',
-      '-c:a', 'libopus',
-      '-f', 'ogg',
-      'pipe:1',
+      "-f",
+      "s16le",
+      "-ar",
+      String(sampleRateHz),
+      "-ac",
+      "1",
+      "-i",
+      "pipe:0",
+      "-c:a",
+      "libopus",
+      "-f",
+      "ogg",
+      "pipe:1",
     ];
 
     const ffmpeg = spawn(ffmpegPath, args);
@@ -30,23 +36,31 @@ function pcmToOggOpus(pcmBuffer, sampleRateHz) {
     const stdoutChunks = [];
     const stderrChunks = [];
 
-    ffmpeg.stdout.on('data', (chunk) => stdoutChunks.push(chunk));
-    ffmpeg.stderr.on('data', (chunk) => stderrChunks.push(chunk));
+    ffmpeg.stdout.on("data", (chunk) => stdoutChunks.push(chunk));
+    ffmpeg.stderr.on("data", (chunk) => stderrChunks.push(chunk));
 
-    ffmpeg.on('error', (err) => {
-      reject(new Error(`PersonaCore: failed to start ffmpeg for audio transcoding. ${err.message}`));
+    ffmpeg.on("error", (err) => {
+      reject(
+        new Error(
+          `PersonaFlow: failed to start ffmpeg for audio transcoding. ${err.message}`,
+        ),
+      );
     });
 
-    ffmpeg.on('close', (code) => {
+    ffmpeg.on("close", (code) => {
       if (code !== 0) {
-        const stderr = Buffer.concat(stderrChunks).toString('utf8');
-        reject(new Error(`PersonaCore: ffmpeg transcoding to ogg_opus failed (exit code ${code}). ${stderr}`));
+        const stderr = Buffer.concat(stderrChunks).toString("utf8");
+        reject(
+          new Error(
+            `PersonaFlow: ffmpeg transcoding to ogg_opus failed (exit code ${code}). ${stderr}`,
+          ),
+        );
         return;
       }
       resolve(Buffer.concat(stdoutChunks));
     });
 
-    ffmpeg.stdin.on('error', () => {
+    ffmpeg.stdin.on("error", () => {
       // Prevent unhandled EPIPE crashes if ffmpeg exits before stdin is fully written;
       // the 'close' handler above still reports the failure via a non-zero exit code.
     });
@@ -63,9 +77,11 @@ function pcmToOggOpus(pcmBuffer, sampleRateHz) {
  * @returns {number}
  */
 function parseSampleRate(mimeType) {
-  const match = /rate=(\d+)/.exec(mimeType || '');
+  const match = /rate=(\d+)/.exec(mimeType || "");
   if (!match) {
-    throw new Error(`PersonaCore: could not determine sample rate from mimeType "${mimeType}".`);
+    throw new Error(
+      `PersonaFlow: could not determine sample rate from mimeType "${mimeType}".`,
+    );
   }
   return parseInt(match[1], 10);
 }

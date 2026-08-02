@@ -1,0 +1,4520 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PersonaFlow Documentation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --hero-ink: #0b0b10;
+        --hero-ink-raised: #131318;
+        --hero-ink-card: #16161c;
+        --hero-paper: #f3eee6;
+        --hero-hairline: #26262e;
+        --hero-hairline-soft: #1c1c22;
+        --hero-amber: #e8a868;
+        --hero-amber-dim: #8a6640;
+        --hero-slate: #9a97a0;
+        --hero-slate-dim: #5c5a62;
+
+        --doc-bg: #faf7f2;
+        --doc-panel: #ffffff;
+        --doc-ink: #221f1c;
+        --doc-muted: #79746d;
+        --doc-line: #e7e1d6;
+        --doc-violet: #6d4aff;
+        --doc-violet-dim: #efeaff;
+        --doc-coral: #ff6b4a;
+        --doc-coral-text: #b83a1a;
+        --doc-code-bg: #221f1c;
+        --doc-code-ink: #ede9e2;
+        --doc-radius: 10px;
+
+        --pg-bg: #141215;
+        --pg-panel: #1b191d;
+        --pg-line: #2e2b30;
+        --pg-ink: #ede9e2;
+        --pg-muted: #8a8580;
+        --pg-violet: #b49cff;
+        --pg-violet-dim: #2a2440;
+        --pg-coral: #ff8a6b;
+
+        --serif: "Fraunces", serif;
+        --mono: "JetBrains Mono", monospace;
+        --sans: "Inter", sans-serif;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+        overflow-x: hidden;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+        * {
+          animation-duration: 0.01ms !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+
+      body {
+        background: var(--doc-bg);
+        color: var(--doc-ink);
+        font-family: var(--sans);
+        line-height: 1.65;
+        -webkit-font-smoothing: antialiased;
+        overflow-x: hidden;
+        max-width: 100vw;
+      }
+
+      code,
+      pre {
+        font-family: var(--mono);
+      }
+      .pill-code {
+        background: var(--doc-violet-dim);
+        color: var(--doc-violet);
+        padding: 1px 7px;
+        border-radius: 5px;
+        font-size: 0.9em;
+      }
+      .inline-link {
+        color: var(--doc-violet);
+        text-decoration: none;
+        border-bottom: 1px solid var(--doc-violet-dim);
+      }
+      .inline-link:hover {
+        border-bottom-color: var(--doc-violet);
+      }
+
+      :focus-visible {
+        outline: 2px solid var(--doc-violet);
+        outline-offset: 2px;
+      }
+
+      /* ============================================================
+     HERO (dark theme, unchanged)
+     ============================================================ */
+
+      .hero {
+        position: relative;
+        min-height: 100vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        background: var(--hero-ink);
+        color: var(--hero-paper);
+      }
+
+      .hero-canvas {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+      }
+      .hero-canvas canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      .hero-vignette {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        background:
+          radial-gradient(
+            ellipse 900px 600px at 78% 55%,
+            rgba(232, 168, 104, 0.16),
+            transparent 60%
+          ),
+          linear-gradient(
+            180deg,
+            rgba(11, 11, 16, 0.55) 0%,
+            rgba(11, 11, 16, 0.35) 30%,
+            rgba(11, 11, 16, 0.75) 78%,
+            var(--hero-ink) 100%
+          );
+        pointer-events: none;
+      }
+
+      .hero-nav {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 28px 56px;
+      }
+
+      @media (max-width: 640px) {
+        .hero-nav {
+          padding: 22px 22px;
+        }
+      }
+
+      .hero-brand {
+        font-family: var(--mono);
+        font-weight: 600;
+        font-size: 14px;
+        letter-spacing: -0.01em;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--hero-paper);
+      }
+
+      .hero-brand .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--hero-amber);
+      }
+
+      .hero-nav-links {
+        display: flex;
+        gap: 28px;
+        font-size: 13px;
+        color: var(--hero-slate);
+      }
+      .hero-nav-links a {
+        text-decoration: none;
+        transition: color 0.15s ease;
+        color: inherit;
+      }
+      .hero-nav-links a:hover {
+        color: var(--hero-paper);
+        text-decoration: none;
+      }
+
+      @media (max-width: 760px) {
+        .hero-nav-links {
+          display: none;
+        }
+      }
+
+      .hero-cta-pill {
+        font-family: var(--mono);
+        font-size: 12px;
+        border: 1px solid rgba(243, 238, 230, 0.25);
+        padding: 8px 16px;
+        border-radius: 999px;
+        text-decoration: none;
+        color: var(--hero-paper);
+        transition:
+          border-color 0.15s ease,
+          background 0.15s ease;
+      }
+
+      .hero-cta-pill:hover {
+        border-color: var(--hero-amber);
+        background: rgba(232, 168, 104, 0.08);
+        text-decoration: none;
+      }
+
+      .hero-body {
+        position: relative;
+        z-index: 2;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        padding: 0 56px;
+      }
+      @media (max-width: 640px) {
+        .hero-body {
+          padding: 0 22px;
+        }
+      }
+
+      .hero-copy {
+        max-width: 640px;
+      }
+
+      .hero-eyebrow {
+        font-family: var(--mono);
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--hero-amber);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .hero-eyebrow .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--hero-amber);
+      }
+
+      .hero h1 {
+        font-family: var(--sans);
+        font-weight: 700;
+        font-size: clamp(38px, 6vw, 68px);
+        line-height: 1.05;
+        letter-spacing: -0.02em;
+        margin-bottom: 26px;
+        color: var(--hero-paper);
+      }
+
+      .hero h1 em {
+        font-family: var(--serif);
+        font-style: italic;
+        font-weight: 400;
+        color: var(--hero-paper);
+      }
+      .hero h1 strong {
+        font-weight: 700;
+        color: var(--hero-amber);
+      }
+
+      .hero .lede {
+        font-size: 17px;
+        color: var(--hero-slate);
+        max-width: 480px;
+        margin-bottom: 40px;
+      }
+      .hero .lede strong {
+        color: var(--hero-paper);
+        font-weight: 600;
+      }
+
+      .hero-actions {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+
+      .hero-btn {
+        font-family: var(--mono);
+        font-size: 13px;
+        font-weight: 500;
+        padding: 13px 22px;
+        border-radius: 4px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition:
+          transform 0.15s ease,
+          background 0.15s ease,
+          border-color 0.15s ease,
+          color 0.15s ease;
+      }
+
+      .hero-btn-primary {
+        background: var(--hero-paper);
+        color: var(--hero-ink);
+      }
+      .hero-btn-primary:hover {
+        background: var(--hero-amber);
+        transform: translateY(-1px);
+        text-decoration: none;
+      }
+
+      .hero-btn-secondary {
+        border: 1px solid rgba(243, 238, 230, 0.25);
+        color: var(--hero-paper);
+      }
+      .hero-btn-secondary:hover {
+        border-color: var(--hero-amber);
+        color: var(--hero-amber);
+        text-decoration: none;
+      }
+
+      .hero-scroll-cue {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 24px 56px 36px;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--hero-slate-dim);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      @media (max-width: 640px) {
+        .hero-scroll-cue {
+          padding: 20px 22px 28px;
+        }
+      }
+
+      .hero-scroll-cue .line {
+        width: 28px;
+        height: 1px;
+        background: var(--hero-slate-dim);
+      }
+
+      /* ============================================================
+     DOC TOPBAR  hidden over hero, revealed after scrolling past it
+     ============================================================ */
+
+      .topbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 24px;
+        height: 58px;
+        background: rgba(250, 247, 242, 0.92);
+        backdrop-filter: blur(8px);
+        border-bottom: 1px solid var(--doc-line);
+        transform: translateY(-100%);
+        opacity: 0;
+        transition:
+          transform 0.25s ease,
+          opacity 0.25s ease;
+        pointer-events: none;
+      }
+
+      .topbar.is-visible {
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-family: var(--serif);
+        font-weight: 600;
+        font-size: 19px;
+        color: var(--doc-ink);
+      }
+      .brand .mark {
+        width: 20px;
+        height: 20px;
+        border-radius: 6px;
+        background: linear-gradient(
+          135deg,
+          var(--doc-violet),
+          var(--doc-coral)
+        );
+      }
+      .status-chip {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--doc-muted);
+        border: 1px solid var(--doc-line);
+        padding: 3px 9px;
+        border-radius: 20px;
+      }
+      .topbar-right {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+      }
+      .search {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--doc-panel);
+        border: 1px solid var(--doc-line);
+        border-radius: 8px;
+        padding: 7px 12px;
+        font-size: 13px;
+        color: var(--doc-muted);
+        font-family: var(--mono);
+        min-width: 210px;
+      }
+      .search kbd {
+        font-family: var(--mono);
+        font-size: 11px;
+        background: var(--doc-bg);
+        border: 1px solid var(--doc-line);
+        border-radius: 4px;
+        padding: 1px 5px;
+      }
+      .topbar-right a.gh {
+        color: var(--doc-ink);
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        white-space: nowrap;
+      }
+      .topbar-right a.gh:hover {
+        text-decoration: underline;
+      }
+
+      @media (max-width: 640px) {
+        .topbar {
+          padding: 0 16px;
+        }
+        .topbar-right {
+          gap: 12px;
+        }
+        .topbar-right a.doc-link {
+          display: none;
+        }
+        .brand {
+          font-size: 16px;
+        }
+      }
+
+      @media (max-width: 380px) {
+        .topbar-right {
+          gap: 8px;
+        }
+        .topbar-right a.gh {
+          font-size: 12px;
+        }
+      }
+
+      .menu-toggle {
+        background: none;
+        border: 1px solid var(--doc-line);
+        border-radius: 7px;
+        font-size: 16px;
+        width: 34px;
+        height: 34px;
+        cursor: pointer;
+        color: var(--doc-ink);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition:
+          border-color 0.15s ease,
+          background 0.15s ease;
+      }
+
+      .menu-toggle:hover,
+      .menu-toggle:focus-visible {
+        border-color: var(--doc-violet);
+        background: var(--doc-violet-dim);
+      }
+
+      /* ============================================================
+     SIDEBAR  hover/focus/click-to-open overlay, never persistent
+     ============================================================ */
+
+      .sidebar-scrim {
+        position: fixed;
+        inset: 0;
+        background: rgba(34, 31, 28, 0.25);
+        z-index: 98;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+      }
+
+      .sidebar-scrim.is-visible {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 58px;
+        height: calc(100vh - 58px);
+        width: 82%;
+        max-width: 290px;
+        background: var(--doc-bg);
+        z-index: 99;
+        overflow-y: auto;
+        padding: 22px 16px 40px;
+        border-right: 1px solid var(--doc-line);
+        box-shadow: 2px 0 18px rgba(34, 31, 28, 0.1);
+        transform: translateX(-100%);
+        transition: transform 0.2s ease;
+      }
+
+      .sidebar.is-open {
+        transform: translateX(0);
+      }
+
+      .sidebar h4 {
+        font-family: var(--mono);
+        font-size: 10.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--doc-muted);
+        margin: 20px 0 8px;
+        padding-left: 10px;
+      }
+      .sidebar h4:first-child {
+        margin-top: 0;
+      }
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 7px 10px;
+        border-radius: 7px;
+        font-size: 13.5px;
+        cursor: pointer;
+      }
+      .nav-item .tick {
+        width: 3px;
+        height: 14px;
+        background: transparent;
+        border-radius: 2px;
+        flex-shrink: 0;
+      }
+      .nav-item:hover {
+        background: var(--doc-violet-dim);
+      }
+      .nav-item.active {
+        background: var(--doc-violet-dim);
+        color: var(--doc-violet);
+        font-weight: 600;
+      }
+      .nav-item.active .tick {
+        background: var(--doc-violet);
+      }
+      .nav-item a {
+        color: inherit;
+        text-decoration: none;
+        display: block;
+        width: 100%;
+      }
+      .nav-item.sub {
+        padding-left: 26px;
+        font-size: 12.5px;
+      }
+      .nav-item.sub .tick {
+        width: 2px;
+      }
+
+      /* ============================================================
+     MAIN DOC CONTENT
+     ============================================================ */
+
+      main {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 64px 40px 100px;
+      }
+
+      section.doc-section {
+        padding-top: 20px;
+        margin-top: -20px;
+        scroll-margin-top: 78px;
+      }
+      section.doc-section + section.doc-section {
+        margin-top: 56px;
+      }
+      .doc-section h2 {
+        font-family: var(--serif);
+        font-size: 27px;
+        font-weight: 600;
+        margin-bottom: 14px;
+        padding-top: 8px;
+        color: var(--doc-ink);
+      }
+      .doc-section h3 {
+        font-family: var(--serif);
+        font-size: 18px;
+        font-weight: 600;
+        margin: 26px 0 10px;
+        color: var(--doc-ink);
+      }
+      .doc-section p {
+        color: #3a3630;
+        max-width: 680px;
+        margin-bottom: 14px;
+        font-size: 15px;
+      }
+      .doc-section p.muted {
+        color: var(--doc-muted);
+      }
+      .doc-section ul {
+        margin: 0 0 16px 20px;
+        max-width: 640px;
+      }
+      .doc-section li {
+        font-size: 14.5px;
+        color: #3a3630;
+        margin-bottom: 5px;
+      }
+
+      .grid-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        gap: 14px;
+        margin: 18px 0 8px;
+      }
+      .card {
+        background: var(--doc-panel);
+        border: 1px solid var(--doc-line);
+        border-radius: var(--doc-radius);
+        padding: 16px 18px;
+      }
+      .card .k {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--doc-coral-text);
+        margin-bottom: 6px;
+      }
+      .card .v {
+        font-size: 13.5px;
+        color: var(--doc-muted);
+      }
+
+      /* Overview & Quickstart  occupy one full viewport like the hero, easing
+     in as they arrive and easing out as they're scrolled past (either
+     direction). */
+      section.doc-section#overview,
+      section.doc-section#quickstart,
+      section.doc-section#architecture {
+        min-height: 100vh;
+        width: 100vw;
+        margin-left: calc(50% - 50vw);
+        margin-top: 0;
+        padding-top: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        box-sizing: border-box;
+        padding-left: max(40px, calc(50% - 450px + 40px));
+        padding-right: max(40px, calc(50% - 450px + 40px));
+        opacity: 0;
+        transform: translateY(56px);
+        transition:
+          opacity 1s ease,
+          transform 1s ease;
+      }
+
+      section.doc-section#overview.is-in-view,
+      section.doc-section#quickstart.is-in-view,
+      section.doc-section#architecture.is-in-view {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        section.doc-section#overview,
+        section.doc-section#quickstart,
+        section.doc-section#architecture {
+          opacity: 1;
+          transform: none;
+          transition: none;
+        }
+      }
+
+      @media (max-width: 900px) {
+        section.doc-section#overview,
+        section.doc-section#quickstart,
+        section.doc-section#architecture {
+          padding-left: 20px;
+          padding-right: 20px;
+        }
+      }
+
+      /* Features & Methods, Request Flow, Storage Layer  ease in/out on scroll
+     like Overview and Quickstart, but size naturally to their content
+     rather than locking to one viewport. */
+      section.doc-section#features,
+      section.doc-section#flow,
+      section.doc-section#storage {
+        opacity: 0;
+        transform: translateY(56px);
+        transition:
+          opacity 1s ease,
+          transform 1s ease;
+      }
+
+      section.doc-section#features.is-in-view,
+      section.doc-section#flow.is-in-view,
+      section.doc-section#storage.is-in-view {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        section.doc-section#features,
+        section.doc-section#flow,
+        section.doc-section#storage {
+          opacity: 1;
+          transform: none;
+          transition: none;
+        }
+      }
+
+      /* Design Principles  eases in on arrival only; once revealed it stays
+     visible (no re-hide when scrolled past). */
+      section.doc-section#principles {
+        opacity: 0;
+        transform: translateY(56px);
+        transition:
+          opacity 1s ease,
+          transform 1s ease;
+      }
+
+      section.doc-section#principles.is-in-view {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      /* Non-Goals  starts fully visible; eases out only once scrolled past
+     (no entrance animation on the way in). */
+      section.doc-section#nongoals {
+        opacity: 1;
+        transform: translateY(0);
+        transition:
+          opacity 1s ease,
+          transform 1s ease;
+      }
+
+      section.doc-section#nongoals.is-past {
+        opacity: 0;
+        transform: translateY(-56px);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        section.doc-section#principles,
+        section.doc-section#nongoals {
+          opacity: 1;
+          transform: none;
+          transition: none;
+        }
+      }
+
+      .code-block {
+        background: var(--doc-code-bg);
+        color: var(--doc-code-ink);
+        border-radius: var(--doc-radius);
+        margin: 16px 0 22px;
+        overflow: hidden;
+        max-width: 680px;
+      }
+      .code-block .code-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 9px 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        font-family: var(--mono);
+        font-size: 11.5px;
+        color: #9a9488;
+      }
+      .code-block pre {
+        padding: 16px;
+        overflow-x: auto;
+        font-size: 13px;
+        line-height: 1.65;
+      }
+      .copy-btn {
+        background: none;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: #d2cdc3;
+        font-family: var(--mono);
+        font-size: 11px;
+        padding: 3px 9px;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      .copy-btn:hover {
+        border-color: rgba(255, 255, 255, 0.4);
+        color: #fff;
+      }
+      .copy-btn.copied {
+        color: var(--doc-coral);
+        border-color: var(--doc-coral);
+      }
+      .tok-key {
+        color: #a9c4ff;
+      }
+      .tok-str {
+        color: #c9e5a0;
+      }
+      .tok-com {
+        color: #8a8478;
+      }
+      .tok-fn {
+        color: #f0c674;
+      }
+      .tok-prop {
+        color: #e0b8d9;
+      }
+
+      .arch-diagram {
+        background: var(--doc-panel);
+        border: 1px solid var(--doc-line);
+        border-radius: var(--doc-radius);
+        padding: 36px 28px;
+        margin: 18px 0 24px;
+        max-width: 720px;
+      }
+      .arch-diagram-inner {
+        position: relative;
+      }
+      .arch-diagram svg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+        pointer-events: none;
+      }
+      .arch-diagram svg path {
+        fill: none;
+        stroke: var(--doc-line);
+        stroke-width: 1.5;
+        transition: stroke 0.2s ease;
+      }
+      .arch-diagram.is-active svg path {
+        stroke: var(--doc-violet);
+      }
+
+      .arch-tier {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        z-index: 1;
+      }
+      .arch-tier + .arch-tier {
+        margin-top: 44px;
+      }
+
+      .arch-node {
+        font-family: var(--mono);
+        font-size: 12.5px;
+        padding: 10px 18px;
+        border-radius: 8px;
+        border: 1px solid var(--doc-line);
+        background: var(--doc-bg);
+        cursor: default;
+        text-align: center;
+        transition:
+          border-color 0.2s ease,
+          color 0.2s ease;
+      }
+
+      .arch-node.top {
+        background: var(--doc-ink);
+        color: var(--doc-bg);
+        border-color: var(--doc-ink);
+      }
+      .arch-node:hover {
+        border-color: var(--doc-violet);
+        color: var(--doc-violet);
+      }
+
+      .arch-branch-row {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        justify-content: center;
+        align-items: start;
+        gap: 28px;
+        width: 100%;
+        max-width: 606px;
+        margin: 0 auto;
+      }
+      .arch-branch-row > .arch-node,
+      .arch-branch-row > .arch-node-wrap {
+        width: 100%;
+        box-sizing: border-box;
+      }
+      .arch-branch-row > .arch-node-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .arch-branch-row > .arch-node-wrap > .arch-node {
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      .arch-sub {
+        font-family: var(--mono);
+        font-size: 10.5px;
+        color: var(--doc-muted);
+        text-align: center;
+        margin-top: 6px;
+      }
+
+      @media (max-width: 620px) {
+        .arch-branch-row {
+          gap: 10px;
+        }
+        .arch-node {
+          font-size: 11px;
+          padding: 8px 8px;
+        }
+      }
+
+      .flow-list {
+        max-width: 400px;
+        margin: 16px 0 24px;
+      }
+      .flow-step {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 9px 0;
+        border-bottom: 1px solid var(--doc-line);
+        font-family: var(--mono);
+        font-size: 13px;
+      }
+      .flow-step:last-child {
+        border-bottom: none;
+      }
+      .flow-step .n {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: var(--doc-violet-dim);
+        color: var(--doc-violet);
+        font-size: 10.5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-weight: 600;
+      }
+      .flow-step.optional .n {
+        background: #fff1ec;
+        color: var(--doc-coral);
+      }
+      .flow-step .tag {
+        margin-left: auto;
+        font-size: 10px;
+        color: var(--doc-coral);
+        background: #fff1ec;
+        padding: 1px 6px;
+        border-radius: 4px;
+      }
+
+      /* Step labels above code blocks (e.g. "01 / INSTALLATION") */
+      .step-label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        color: var(--doc-violet);
+        margin: 20px 0 8px;
+      }
+
+      .step-label .step-num {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: var(--doc-violet-dim);
+        color: var(--doc-violet);
+        font-size: 10.5px;
+        font-weight: 600;
+      }
+
+      .step-label .step-name {
+        text-transform: uppercase;
+      }
+
+      /* Spec summary box (replaces trailing muted paragraphs under code blocks) */
+      .spec-box {
+        border: 1px solid var(--doc-line);
+        border-radius: var(--doc-radius);
+        background: var(--doc-panel);
+        max-width: 680px;
+        margin: 16px 0 24px;
+        overflow: hidden;
+      }
+
+      .spec-box .spec-title {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--doc-violet);
+        background: var(--doc-violet-dim);
+        padding: 9px 16px;
+      }
+
+      .spec-box dl {
+        display: block;
+        margin: 0;
+      }
+      .spec-box .spec-row {
+        display: flex;
+        align-items: baseline;
+        gap: 16px;
+        padding: 11px 16px;
+        border-top: 1px solid var(--doc-line);
+      }
+
+      .spec-box .spec-row dt {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--doc-muted);
+        width: 160px;
+        flex-shrink: 0;
+      }
+
+      .spec-box .spec-row dd {
+        font-size: 13.5px;
+        color: #3a3630;
+        margin: 0;
+      }
+
+      @media (max-width: 600px) {
+        .spec-box .spec-row {
+          flex-direction: column;
+          gap: 3px;
+        }
+        .spec-box .spec-row dt {
+          width: auto;
+        }
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 14px 0 24px;
+        max-width: 680px;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 9px 12px;
+        font-size: 13.5px;
+        border-bottom: 1px solid var(--doc-line);
+      }
+      th {
+        font-family: var(--mono);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--doc-muted);
+        font-weight: 500;
+      }
+
+      @media (max-width: 640px) {
+        table {
+          display: block;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+          white-space: nowrap;
+        }
+        th,
+        td {
+          white-space: normal;
+          min-width: 140px;
+        }
+      }
+
+      .callout {
+        border-left: 3px solid var(--doc-coral);
+        background: #fff1ec;
+        padding: 12px 16px;
+        border-radius: 0 8px 8px 0;
+        font-size: 13.5px;
+        color: #7a3b26;
+        max-width: 640px;
+        margin: 16px 0;
+      }
+      .callout.violet {
+        border-color: var(--doc-violet);
+        background: var(--doc-violet-dim);
+        color: #3f2c99;
+      }
+
+      /* Playground (dark theme, distinct from the rest of the page) */
+
+      .pg-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-family: var(--mono);
+        font-size: 11.5px;
+        color: var(--pg-muted);
+        border: 1px solid var(--pg-line);
+        padding: 5px 12px;
+        border-radius: 999px;
+        margin: 4px 0 22px;
+      }
+
+      .pg-status::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--pg-coral);
+        flex-shrink: 0;
+      }
+
+      .pg-widget {
+        border: 1px solid var(--pg-line);
+        border-radius: var(--doc-radius);
+        background: var(--pg-panel);
+        max-width: 680px;
+        overflow: hidden;
+        margin: 16px 0 28px;
+      }
+
+      .pg-tabs {
+        display: flex;
+        border-bottom: 1px solid var(--pg-line);
+        background: var(--pg-bg);
+      }
+
+      .pg-tab {
+        font-family: var(--mono);
+        font-size: 12.5px;
+        color: var(--pg-muted);
+        background: none;
+        border: none;
+        border-bottom: 2px solid transparent;
+        padding: 12px 16px;
+        cursor: pointer;
+        transition:
+          color 0.15s ease,
+          border-color 0.15s ease;
+      }
+
+      .pg-tab:hover {
+        color: var(--pg-ink);
+      }
+      .pg-tab.is-active {
+        color: var(--pg-violet);
+        border-bottom-color: var(--pg-violet);
+      }
+
+      .pg-panel {
+        display: none;
+        padding: 18px 20px 20px;
+      }
+      .pg-panel.is-active {
+        display: block;
+      }
+
+      .pg-code {
+        font-family: var(--mono);
+        font-size: 13px;
+        line-height: 1.75;
+        color: var(--pg-ink);
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .pg-output {
+        color: var(--pg-muted);
+      }
+
+      .pg-field-wrap {
+        display: inline-block;
+        width: 100%;
+        margin: 4px 0 2px;
+      }
+
+      .pg-upload {
+        display: block;
+        border: 1px dashed var(--pg-line);
+        border-radius: 6px;
+        padding: 14px 16px;
+        text-align: center;
+        cursor: pointer;
+        margin: 6px 0 4px;
+        transition:
+          border-color 0.15s ease,
+          background 0.15s ease;
+      }
+
+      .pg-upload:hover {
+        border-color: var(--pg-violet);
+        background: var(--pg-violet-dim);
+      }
+
+      .pg-upload input[type="file"] {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+      }
+
+      .pg-upload-text {
+        font-family: var(--sans);
+        font-size: 13px;
+        color: var(--pg-muted);
+      }
+
+      .pg-file-name {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--pg-violet);
+        min-height: 1.4em;
+        margin-bottom: 4px;
+      }
+
+      .pg-field {
+        width: 100%;
+        font-family: var(--mono);
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--pg-violet);
+        background: var(--pg-violet-dim);
+        border: 1px solid var(--pg-line);
+        border-radius: 5px;
+        padding: 8px 10px;
+        resize: vertical;
+      }
+
+      .pg-field:focus {
+        outline: 2px solid var(--pg-violet);
+        outline-offset: 1px;
+      }
+
+      .pg-field-number {
+        width: auto;
+        min-width: 90px;
+        display: inline-block;
+      }
+
+      .pg-error {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: #ff8a80;
+        min-height: 1em;
+        margin-top: 10px;
+      }
+
+      .pg-run-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+        margin-top: 14px;
+        flex-wrap: wrap;
+      }
+
+      .pg-run {
+        font-family: var(--mono);
+        font-size: 13px;
+        font-weight: 600;
+        padding: 10px 22px;
+        border-radius: 6px;
+        border: none;
+        background: var(--pg-ink);
+        color: var(--pg-bg);
+        cursor: pointer;
+        transition:
+          background 0.15s ease,
+          opacity 0.15s ease;
+        flex-shrink: 0;
+      }
+
+      .pg-run:hover:not(:disabled) {
+        background: var(--pg-violet);
+        color: var(--pg-bg);
+      }
+      .pg-run:disabled {
+        opacity: 0.55;
+        cursor: progress;
+      }
+
+      .pg-log {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        font-family: var(--mono);
+        font-size: 12px;
+        padding-top: 8px;
+      }
+      .pg-log .pg-log-line {
+        color: var(--pg-muted);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .pg-log .pg-log-line.is-active {
+        color: var(--pg-violet);
+      }
+      .pg-log .pg-log-line.is-active::before {
+        content: "";
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--pg-violet);
+        animation: pg-pulse 1s ease-in-out infinite;
+      }
+      .pg-log .pg-log-line.is-done::before {
+        content: "✓";
+        color: var(--pg-violet);
+        font-size: 11px;
+      }
+
+      @keyframes pg-pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.3;
+        }
+      }
+
+      /* Playground section: full-bleed dark background, distinct from the
+     light doc theme around it. */
+      section.doc-section#playground {
+        background: var(--pg-bg);
+        width: 100vw;
+        margin-left: calc(50% - 50vw);
+        padding-left: max(40px, calc(50% - 450px + 40px));
+        padding-right: max(40px, calc(50% - 450px + 40px));
+        padding-top: 56px;
+        padding-bottom: 64px;
+      }
+
+      #playground h2,
+      #playground h3 {
+        color: var(--pg-ink);
+      }
+      #playground p {
+        color: var(--pg-muted);
+      }
+      #playground .pill-code {
+        background: var(--pg-violet-dim);
+        color: var(--pg-violet);
+      }
+
+      @media (max-width: 900px) {
+        section.doc-section#playground {
+          padding-left: 20px;
+          padding-right: 20px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .pg-log .pg-log-line.is-active::before {
+          animation: none;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .pg-tab {
+          padding: 10px 12px;
+          font-size: 11.5px;
+        }
+      }
+
+      .site-footer {
+        margin-top: 80px;
+        padding: 40px 40px 56px;
+        max-width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+        text-align: center;
+      }
+
+      .site-footer-rule {
+        height: 1px;
+        background: var(--doc-line);
+        margin-bottom: 28px;
+      }
+
+      .site-footer-title {
+        font-family: var(--mono);
+        font-size: 13px;
+        color: var(--doc-ink);
+        margin-bottom: 10px;
+      }
+
+      .site-footer-links {
+        font-family: var(--mono);
+        font-size: 13px;
+        margin-bottom: 18px;
+      }
+
+      .site-footer-links a {
+        color: var(--doc-violet);
+        text-decoration: none;
+      }
+
+      .site-footer-links a:hover {
+        text-decoration: underline;
+      }
+
+      .site-footer-dot {
+        color: var(--doc-muted);
+        margin: 0 10px;
+      }
+
+      .site-footer-tag {
+        font-size: 12.5px;
+        color: var(--doc-muted);
+        font-style: italic;
+      }
+
+      @media (max-width: 900px) {
+        main {
+          padding: 48px 20px 80px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ================= HERO ================= -->
+    <section class="hero">
+      <div class="hero-canvas"><canvas id="field"></canvas></div>
+      <div class="hero-vignette"></div>
+
+      <div class="hero-nav">
+        <div class="hero-brand"><span class="dot"></span> personaflow</div>
+        <nav class="hero-nav-links" aria-label="Page sections">
+          <a href="#quickstart">Quickstart</a>
+          <a href="#optional">Optional</a>
+          <a href="#architecture">Architecture</a>
+          <a href="#roadmap">Roadmap</a>
+        </nav>
+        <a class="hero-cta-pill" href="#quickstart">Get started</a>
+      </div>
+
+      <div class="hero-body">
+        <div class="hero-copy">
+          <div class="hero-eyebrow"><span class="dot"></span> V1.0</div>
+          <h1>
+            Build your <em>multimodal</em> <strong>AI system</strong> within
+            seconds.
+          </h1>
+          <p class="lede">
+            A lightweight, plug-and-play SDK to quickly add
+            <strong>conversational, multimodal intelligence</strong> to your
+            applications with minimal setup.
+          </p>
+          <div class="hero-actions">
+            <a class="hero-btn hero-btn-primary" href="#quickstart"
+              >Read the quickstart →</a
+            >
+            <a class="hero-btn hero-btn-secondary" href="#architecture"
+              >See the architecture</a
+            >
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-scroll-cue"><span class="line"></span> Scroll</div>
+    </section>
+
+    <!-- ================= DOC TOPBAR (revealed after hero) ================= -->
+    <div class="topbar" id="topbar">
+      <div style="display: flex; align-items: center; gap: 14px">
+        <button
+          class="menu-toggle"
+          id="menuToggle"
+          aria-label="Toggle navigation"
+          aria-expanded="false"
+        >
+          ☰
+        </button>
+        <div class="brand"><span class="mark"></span> PersonaFlow</div>
+      </div>
+      <div class="topbar-right">
+        <a class="gh doc-link" href="#architecture">Architecture</a>
+        <a class="gh doc-link" href="https://github.com/Ace-ux-cmd/PersonaFlow/blob/main/README.md">Readme.md</a>
+        <a class="gh" href="https://github.com/Ace-ux-cmd/PersonaFlow.git">GitHub</a>
+        <a class="gh" href="#quickstart">npm</a>
+      </div>
+    </div>
+
+    <div class="sidebar-scrim" id="sidebarScrim"></div>
+
+    <nav class="sidebar" id="sidebar" aria-label="Documentation sections">
+      <h4>Get Started</h4>
+      <div class="nav-item" data-target="overview">
+        <span class="tick"></span><a href="#overview">Overview</a>
+      </div>
+      <div class="nav-item" data-target="quickstart">
+        <span class="tick"></span><a href="#quickstart">Quickstart</a>
+      </div>
+      <div class="nav-item" data-target="features">
+        <span class="tick"></span><a href="#features">Features &amp; Methods</a>
+      </div>
+      <div class="nav-item sub" data-target="optional">
+        <span class="tick"></span><a href="#optional">Optional Features</a>
+      </div>
+
+      <h4>Design</h4>
+      <div class="nav-item" data-target="principles">
+        <span class="tick"></span><a href="#principles">Design Principles</a>
+      </div>
+      <div class="nav-item" data-target="nongoals">
+        <span class="tick"></span><a href="#nongoals">Non-Goals</a>
+      </div>
+
+      <h4>Architecture</h4>
+      <div class="nav-item" data-target="architecture">
+        <span class="tick"></span><a href="#architecture">System Map</a>
+      </div>
+      <div class="nav-item" data-target="flow">
+        <span class="tick"></span><a href="#flow">Request Flow</a>
+      </div>
+      <div class="nav-item" data-target="modules">
+        <span class="tick"></span><a href="#modules">Module Reference</a>
+      </div>
+      <div class="nav-item" data-target="storage">
+        <span class="tick"></span><a href="#storage">Storage Layer</a>
+      </div>
+
+      <h4>Try It</h4>
+      <div class="nav-item" data-target="playground">
+        <span class="tick"></span><a href="#playground">Playground</a>
+      </div>
+      <div class="nav-item sub" data-target="pg-handlemessage">
+        <span class="tick"></span
+        ><a href="#pg-handlemessage">handleMessage()</a>
+      </div>
+      <div class="nav-item sub" data-target="pg-usevision">
+        <span class="tick"></span><a href="#pg-usevision">useVision()</a>
+      </div>
+      <div class="nav-item sub" data-target="pg-usespeechrecognition">
+        <span class="tick"></span
+        ><a href="#pg-usespeechrecognition">useSpeechRecognition()</a>
+      </div>
+      <div class="nav-item sub" data-target="pg-gethistory">
+        <span class="tick"></span><a href="#pg-gethistory">getHistory()</a>
+      </div>
+      <div class="nav-item sub" data-target="pg-deletehistory">
+        <span class="tick"></span
+        ><a href="#pg-deletehistory">deleteHistory()</a>
+      </div>
+    </nav>
+
+    <main>
+      <section class="doc-section" id="overview">
+        <h2>Overview</h2>
+        <p>
+          <strong>PersonaFlow</strong> is a plug-and-play SDK designed to
+          eliminate the operational friction of producing, orchestrating, and
+          managing AI responses. It manages the underlying complexity of
+          stateful memory, multimodal processing, and system execution, allowing
+          developers to deploy dependable AI capabilities without building and
+          maintaining custom infrastructure from scratch.
+        </p>
+        <p>
+          By abstracting away Gemini-specific implementation details, common
+          system challenges (such as multi-turn state persistence, speech
+          recognition, vision handling, and automatic API key failover) are
+          managed seamlessly behind one consistent, unified API.
+        </p>
+        <div class="grid-cards">
+          <div class="card">
+            <div class="k">Engine</div>
+            <div class="v">Google Gemini Native</div>
+          </div>
+          <div class="card">
+            <div class="k">State persistence</div>
+            <div class="v">In-Memory Default (MongoDB Ready)</div>
+          </div>
+          <div class="card">
+            <div class="k">Resilience</div>
+            <div class="v">Automated API Key Failover</div>
+          </div>
+          <div class="card">
+            <div class="k">Core scope</div>
+            <div class="v">Stateful Response Orchestration</div>
+          </div>
+        </div>
+        <p>
+          For a high-level conceptual breakdown and architecture summary, see
+          the complete
+          <a class="inline-link" href="overview.md">Overview Documentation</a>.
+        </p>
+      </section>
+
+      <section class="doc-section" id="quickstart">
+        <h2>Quickstart</h2>
+        <p>
+          Install the package, configure your system persona, and begin
+          dispatching requests. The base execution pipeline operates out of the
+          box with zero extra configuration.
+        </p>
+
+        <div class="step-label">
+          <span class="step-num">01</span
+          ><span class="step-name">Installation</span>
+        </div>
+        <div class="code-block">
+          <div class="code-head">
+            <span>terminal</span
+            ><button class="copy-btn" data-copy="npm install personaflow">
+              Copy
+            </button>
+          </div>
+          <pre>npm install personaflow</pre>
+        </div>
+
+        <div class="step-label">
+          <span class="step-num">02</span
+          ><span class="step-name">Initialization</span>
+        </div>
+        <div class="code-block">
+          <div class="code-head">
+            <span>index.js</span
+            ><button
+              class="copy-btn"
+              data-copy="const AI = require('personaflow');
+
+const ai = new AI({
+    apiKeys: [
+        process.env.GEMINI_API_KEY
+    ],
+    persona: `
+You are an expert technical system assistant.
+Provide direct, concise, and accurate responses.
+`,
+    historyLimit: 20, // Optional: memory storage cap
+});
+
+const response = await ai.handleMessage({
+    userId: '12345',
+    text: 'Hello!'
+});
+
+console.log(response.text);
+// 'Hello. How can I help you today?'"
+            >
+              Copy
+            </button>
+          </div>
+          <pre><span class="tok-key">const</span> AI = require(<span class="tok-str">"personaflow"</span>);
+
+<span class="tok-key">const</span> ai = <span class="tok-fn">new AI</span>({
+    apiKeys: [
+        process.env.GEMINI_API_KEY
+    ],
+    persona: <span class="tok-str">`
+You are an expert technical system assistant.
+Provide direct, concise, and accurate responses.
+`</span>,
+    historyLimit: <span class="tok-key">20</span>, <span class="tok-com">// Optional: memory storage cap</span>
+});
+
+<span class="tok-key">const</span> response = <span class="tok-key">await</span> ai.<span class="tok-fn">handleMessage</span>({
+    userId: <span class="tok-str">"12345"</span>,
+    text: <span class="tok-str">"Hello!"</span>
+});
+
+console.<span class="tok-fn">log</span>(response.text);
+<span class="tok-com">// 'Hello. How can I help you today?'</span></pre>
+        </div>
+
+        <div class="spec-box">
+          <div class="spec-title">Default Pipeline Behavior</div>
+          <dl>
+            <div class="spec-row">
+              <dt>Payload</dt>
+              <dd>Standard text input and output handling</dd>
+            </div>
+            <div class="spec-row">
+              <dt>State Management</dt>
+              <dd>10-message in-memory buffer per userId</dd>
+            </div>
+            <div class="spec-row">
+              <dt>Resilience</dt>
+              <dd>Automated Gemini API key failover</dd>
+            </div>
+            <div class="spec-row">
+              <dt>Context</dt>
+              <dd>Global system persona applied across all sessions</dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <section class="doc-section" id="features">
+        <h2>Features &amp; Methods</h2>
+        <p>
+          <span class="pill-code">handleMessage()</span> is the core execution
+          pipeline of PersonaFlow. All optional module configurations modify
+          what <span class="pill-code">handleMessage()</span> can accept as
+          inputs or return as outputs.
+        </p>
+
+        <h3>Primary Engine: handleMessage()</h3>
+        <p>
+          The <span class="pill-code">handleMessage()</span> method accepts a
+          unified payload object. It does not enforce a rigid format&mdash;as
+          long as <strong>at least one valid input parameter</strong> is
+          supplied, the pipeline executes. Text input is not required if another
+          input modality (such as an image or audio buffer) is provided.
+        </p>
+
+        <div class="step-label">
+          <span class="step-name">Payload Schema</span>
+        </div>
+        <div class="code-block">
+          <div class="code-head">
+            <span>javascript</span
+            ><button
+              class="copy-btn"
+              data-copy='const response = await ai.handleMessage({
+  userId: "user_12345", // Required: Session identifier
+  text: "Analyze this log.", // Optional: Text input
+  image: imageBuffer, // Optional: Requires ai.useVision()
+  voice: audioBuffer, // Optional: Requires ai.useSpeechRecognition()
+});'
+            >
+              Copy
+            </button>
+          </div>
+          <pre><span class="tok-key">const</span> response = <span class="tok-key">await</span> ai.<span class="tok-fn">handleMessage</span>({
+  userId: <span class="tok-str">"user_12345"</span>, <span class="tok-com">// Required: Session identifier</span>
+  text: <span class="tok-str">"Analyze this log."</span>, <span class="tok-com">// Optional: Text input</span>
+  image: imageBuffer, <span class="tok-com">// Optional: Requires ai.useVision()</span>
+  voice: audioBuffer, <span class="tok-com">// Optional: Requires ai.useSpeechRecognition()</span>
+});</pre>
+        </div>
+
+        <h3 style="margin-top: 30px">Supported Input Modalities</h3>
+        <table>
+          <tr>
+            <th>Input Parameter</th>
+            <th>Prerequisite Method</th>
+            <th>Valid Payload Types</th>
+          </tr>
+          <tr>
+            <td><span class="pill-code">text</span></td>
+            <td><em>None (Base Engine)</em></td>
+            <td>string</td>
+          </tr>
+          <tr>
+            <td><span class="pill-code">image</span></td>
+            <td><span class="pill-code">ai.useVision()</span></td>
+            <td>Buffer, Base64 string, URL</td>
+          </tr>
+          <tr>
+            <td><span class="pill-code">voice</span></td>
+            <td><span class="pill-code">ai.useSpeechRecognition()</span></td>
+            <td>Buffer, ReadStream</td>
+          </tr>
+        </table>
+
+        <h3>Valid Payload Combinations</h3>
+        <p>
+          Because input requirements are flexible, any of the following dispatch
+          signatures are valid:
+        </p>
+        <ul>
+          <li>
+            <strong>Text-Only:</strong>
+            <span class="pill-code">{ userId, text }</span>
+          </li>
+          <li>
+            <strong>Image-Only:</strong>
+            <span class="pill-code">{ userId, image }</span>
+          </li>
+          <li>
+            <strong>Voice-Only:</strong>
+            <span class="pill-code">{ userId, voice }</span>
+          </li>
+          <li>
+            <strong>Multimodal:</strong>
+            <span class="pill-code">{ userId, image, voice }</span>,
+            <span class="pill-code">{ userId, text, image }</span>, etc.
+          </li>
+        </ul>
+
+        <h3 id="optional" style="scroll-margin-top: 78px">Optional Features</h3>
+        <p>
+          Capabilities are strictly opt-in via progressive enhancement. Inactive
+          feature modules are completely bypassed in the orchestrator pipeline,
+          guaranteeing zero execution overhead.
+        </p>
+        <div class="code-block">
+          <div class="code-head">
+            <span>optional-features.js</span
+            ><button
+              class="copy-btn"
+              data-copy="// Enable persistent state via MongoDB
+ai.useMemory(process.env.MONGODB_URL);
+
+// Activate image payload decoding
+ai.useVision();
+
+// Activate audio-to-text transcription
+ai.useSpeechRecognition();
+
+// Activate audio synthesis with hybrid output rules
+ai.useVoiceOutput({
+    includeText: true,
+    probability: 0.5
+});"
+            >
+              Copy
+            </button>
+          </div>
+          <pre><span class="tok-com">// Enable persistent state via MongoDB</span>
+ai.<span class="tok-fn">useMemory</span>(process.env.MONGODB_URL);
+
+<span class="tok-com">// Activate image payload decoding</span>
+ai.<span class="tok-fn">useVision</span>();
+
+<span class="tok-com">// Activate audio-to-text transcription</span>
+ai.<span class="tok-fn">useSpeechRecognition</span>();
+
+<span class="tok-com">// Activate audio synthesis with hybrid output rules</span>
+ai.<span class="tok-fn">useVoiceOutput</span>({
+    includeText: <span class="tok-key">true</span>,
+    probability: 0.5
+});</pre>
+        </div>
+        <table>
+          <tr>
+            <th>Method</th>
+            <th>Capability &amp; Scope</th>
+            <th>System Behavior</th>
+          </tr>
+          <tr>
+            <td><span class="pill-code">useMemory(url)</span></td>
+            <td><strong>Persistent State Store</strong></td>
+            <td>Swaps default in-memory storage for MongoDB persistence.</td>
+          </tr>
+          <tr>
+            <td><span class="pill-code">useVision()</span></td>
+            <td><strong>Multimodal Vision Engine</strong></td>
+            <td>Enables decoding and processing of image binary payloads.</td>
+          </tr>
+          <tr>
+            <td><span class="pill-code">useSpeechRecognition()</span></td>
+            <td><strong>Audio Transcription (STT)</strong></td>
+            <td>
+              Converts incoming voice buffers into normalized text prior to
+              state execution.
+            </td>
+          </tr>
+          <tr>
+            <td><span class="pill-code">useVoiceOutput(options)</span></td>
+            <td><strong>Speech Synthesis (TTS)</strong></td>
+            <td>
+              Generates audio responses with configurable text/voice output
+              probability.
+            </td>
+          </tr>
+        </table>
+
+        <h3 style="margin-top: 34px">Extension Modules</h3>
+        <p>
+          Extension methods extend the base capability of
+          <span class="pill-code">handleMessage()</span> by hooking directly
+          into the execution lifecycle.
+        </p>
+        <div class="code-block">
+          <div class="code-head">
+            <span>progressive-config.js</span
+            ><button
+              class="copy-btn"
+              data-copy="// Example: Progressive Configuration
+ai.useMemory(process.env.MONGODB_URL);
+ai.useVision();
+ai.useSpeechRecognition();
+ai.useVoiceOutput({ probability: 0.5 });"
+            >
+              Copy
+            </button>
+          </div>
+          <pre><span class="tok-com">// Example: Progressive Configuration</span>
+ai.<span class="tok-fn">useMemory</span>(process.env.MONGODB_URL);
+ai.<span class="tok-fn">useVision</span>();
+ai.<span class="tok-fn">useSpeechRecognition</span>();
+ai.<span class="tok-fn">useVoiceOutput</span>({ probability: 0.5 });</pre>
+        </div>
+
+        <h3>useMemory(url)</h3>
+        <p>
+          Configures persistent storage for session context using the internal
+          MongoStore driver.
+        </p>
+        <div class="code-block">
+          <div class="code-head">
+            <span>index.js</span
+            ><button
+              class="copy-btn"
+              data-copy="ai.useMemory(process.env.MONGODB_URL);"
+            >
+              Copy
+            </button>
+          </div>
+          <pre>ai.<span class="tok-fn">useMemory</span>(process.env.MONGODB_URL);</pre>
+        </div>
+        <ul>
+          <li>
+            <strong>Parameters:</strong>
+            <ul>
+              <li>
+                <span class="pill-code">url</span> <em>(string, required)</em>:
+                MongoDB connection string (e.g.,
+                <span class="pill-code">process.env.MONGODB_URL</span>).
+              </li>
+            </ul>
+          </li>
+          <li>
+            <strong>Connection Lifecycle:</strong> Connection is
+            <strong>lazy</strong>. It initializes on the first
+            <span class="pill-code">saveMessage()</span> or
+            <span class="pill-code">getHistory()</span> call rather than at
+            startup.
+          </li>
+          <li>
+            <strong>Error Behavior:</strong> If the Mongoose connection promise
+            rejects, <span class="pill-code">handleMessage()</span> throws the
+            error directly. <span class="pill-code">getHistory()</span> and
+            <span class="pill-code">deleteHistory()</span> do not throw: they
+            return the session data directly on success, or a
+            <span class="pill-code">{ success: false, error }</span> object on
+            failure, so callers should check for a
+            <span class="pill-code">success</span> field on the result rather
+            than relying on try/catch.
+          </li>
+        </ul>
+        <div class="code-block">
+          <div class="code-head">
+            <span>index.js</span
+            ><button
+              class="copy-btn"
+              data-copy='const history = await ai.getHistory("user_12345");
+
+if (history && history.success === false) {
+  console.error(history.error.code, history.error.message);
+} else {
+  console.log(history);
+}'
+            >
+              Copy
+            </button>
+          </div>
+          <pre><span class="tok-key">const</span> history = <span class="tok-key">await</span> ai.<span class="tok-fn">getHistory</span>(<span class="tok-str">"user_12345"</span>);
+
+<span class="tok-key">if</span> (history && history.success === <span class="tok-key">false</span>) {
+  console.<span class="tok-fn">error</span>(history.error.code, history.error.message);
+} <span class="tok-key">else</span> {
+  console.<span class="tok-fn">log</span>(history);
+}</pre>
+        </div>
+
+        <h3>useVision()</h3>
+        <p>
+          Enables image payload ingestion for
+          <span class="pill-code">handleMessage()</span>.
+        </p>
+        <div class="code-block">
+          <div class="code-head">
+            <span>index.js</span
+            ><button class="copy-btn" data-copy="ai.useVision();">Copy</button>
+          </div>
+          <pre>ai.<span class="tok-fn">useVision</span>();</pre>
+        </div>
+        <ul>
+          <li><strong>Parameters:</strong> <em>None</em></li>
+          <li>
+            <strong>Behavior:</strong> Unlocks the
+            <span class="pill-code">image</span> field inside
+            <span class="pill-code">handleMessage()</span> payloads,
+            automatically formatting images for Gemini multimodal processing.
+          </li>
+        </ul>
+
+        <h3>useSpeechRecognition()</h3>
+        <p>
+          Enables audio payload ingestion for
+          <span class="pill-code">handleMessage()</span>.
+        </p>
+        <div class="code-block">
+          <div class="code-head">
+            <span>index.js</span
+            ><button class="copy-btn" data-copy="ai.useSpeechRecognition();">
+              Copy
+            </button>
+          </div>
+          <pre>ai.<span class="tok-fn">useSpeechRecognition</span>();</pre>
+        </div>
+        <ul>
+          <li><strong>Parameters:</strong> <em>None</em></li>
+          <li>
+            <strong>Behavior:</strong> Unlocks the
+            <span class="pill-code">voice</span> field inside
+            <span class="pill-code">handleMessage()</span> payloads, converting
+            speech inputs into normalized text prior to prompt generation.
+          </li>
+        </ul>
+
+        <h3>useVoiceOutput(options?)</h3>
+        <p>Enables audio synthesis on model responses.</p>
+        <div class="code-block">
+          <div class="code-head">
+            <span>index.js</span
+            ><button
+              class="copy-btn"
+              data-copy="ai.useVoiceOutput({
+  includeText: true,
+  probability: 1.0
+});"
+            >
+              Copy
+            </button>
+          </div>
+          <pre>ai.<span class="tok-fn">useVoiceOutput</span>({
+  includeText: <span class="tok-key">true</span>,
+  probability: 1.0
+});</pre>
+        </div>
+        <ul>
+          <li>
+            <strong>Parameters:</strong>
+            <ul>
+              <li>
+                <span class="pill-code">options.includeText</span>
+                <em>(boolean, default: false)</em>: Determines whether the text
+                transcript is returned alongside the synthesized audio buffer.
+              </li>
+              <li>
+                <span class="pill-code">options.probability</span>
+                <em>(number, default: 0.5)</em>: A float between 0.0 and 1.0
+                defining the likelihood of generating voice output. At the
+                default setting of 0, speech synthesis is bypassed entirely,
+                returning standard text.
+              </li>
+            </ul>
+          </li>
+        </ul>
+
+        <h4
+          style="
+            font-family: var(--serif);
+            font-size: 15px;
+            font-weight: 600;
+            margin: 22px 0 10px;
+          "
+        >
+          Constraints
+        </h4>
+        <p>
+          This module is strictly scoped to text-to-speech (TTS) synthesis and
+          does not perform downstream audio manipulation (such as pitch
+          adjustment, format transcoding, or noise suppression). Any
+          post-processing or client-specific audio transformations remain the
+          responsibility of the host application.
+        </p>
+
+        <h3 id="key-rotation" style="scroll-margin-top: 78px">
+          API Key Rotation &amp; Blacklisting
+        </h3>
+        <p>
+          PersonaFlow features an automated key rotation engine that guarantees
+          maximum uptime by handling upstream provider limits without manual
+          try-catch loops.
+        </p>
+        <div class="code-block">
+          <div class="code-head">
+            <span>javascript</span
+            ><button
+              class="copy-btn"
+              data-copy="const ai = new AI({
+  apiKeys: [
+    process.env.GEMINI_KEY_1,
+    process.env.GEMINI_KEY_2,
+    process.env.GEMINI_KEY_3
+  ]
+});"
+            >
+              Copy
+            </button>
+          </div>
+          <pre><span class="tok-key">const</span> ai = <span class="tok-key">new</span> <span class="tok-fn">AI</span>({
+  apiKeys: [
+    process.env.GEMINI_KEY_1,
+    process.env.GEMINI_KEY_2,
+    process.env.GEMINI_KEY_3
+  ]
+});</pre>
+        </div>
+
+        <h4
+          style="
+            font-family: var(--serif);
+            font-size: 15px;
+            font-weight: 600;
+            margin: 26px 0 10px;
+          "
+        >
+          Failover Lifecycle
+        </h4>
+        <p>
+          When an API request is initiated via
+          <span class="pill-code">handleMessage()</span>, the engine rotates
+          through the key pool according to the following execution lifecycle:
+        </p>
+        <ol style="margin: 0 0 16px 20px; max-width: 640px">
+          <li style="font-size: 14.5px; color: #3a3630; margin-bottom: 10px">
+            <strong>Pre-Flight Pool Check:</strong> The orchestrator checks the
+            status of all configured API keys. If every key in the pool is
+            currently marked as blacklisted, execution halts immediately with
+            <span class="pill-code">ALL_KEYS_UNAVAILABLE</span> (<span
+              class="pill-code"
+              >metadata.keyIndex</span
+            >
+            resolves to <span class="pill-code">null</span>).
+          </li>
+          <li style="font-size: 14.5px; color: #3a3630; margin-bottom: 10px">
+            <strong>Rotatable Errors:</strong> If an active key encounters an
+            error classified as rotatable (<span class="pill-code"
+              >RATE_LIMIT</span
+            >, <span class="pill-code">AUTH_ERROR</span>,
+            <span class="pill-code">UPSTREAM_ERROR</span>, or
+            <span class="pill-code">NETWORK_ERROR</span>), the failing key is
+            <strong>blacklisted</strong> and the orchestrator immediately
+            retries the request with the next healthy key in the array.
+          </li>
+          <li style="font-size: 14.5px; color: #3a3630">
+            <strong>Non-Rotatable Errors:</strong> Invalid payloads or
+            client-side bad requests (<span class="pill-code"
+              >REQUEST_ERROR</span
+            >
+            / HTTP 400 &amp; 404) do <strong>not</strong> trigger key rotation.
+            Execution fails immediately to prevent burning through remaining
+            quota.
+          </li>
+        </ol>
+
+        <h4
+          style="
+            font-family: var(--serif);
+            font-size: 15px;
+            font-weight: 600;
+            margin: 26px 0 10px;
+          "
+        >
+          Audit &amp; Telemetry Metadata
+        </h4>
+        <p>
+          Every response exposes execution details so applications can monitor
+          key pool health:
+        </p>
+        <table>
+          <tr>
+            <th>Field</th>
+            <th>Location</th>
+            <th>Description</th>
+          </tr>
+          <tr>
+            <td><span class="pill-code">apiKeyIndex</span></td>
+            <td><span class="pill-code">success.metadata</span></td>
+            <td>
+              Index of the active key that successfully fulfilled the request.
+            </td>
+          </tr>
+          <tr>
+            <td><span class="pill-code">rotated</span></td>
+            <td><span class="pill-code">success.metadata</span></td>
+            <td>
+              <span class="pill-code">true</span> if key failover occurred at
+              least once during execution.
+            </td>
+          </tr>
+          <tr>
+            <td><span class="pill-code">keysTriedThisRequest</span></td>
+            <td><span class="pill-code">success.metadata</span></td>
+            <td>
+              Total number of keys evaluated before receiving a valid upstream
+              response.
+            </td>
+          </tr>
+          <tr>
+            <td><span class="pill-code">keyIndex</span></td>
+            <td><span class="pill-code">failure.metadata</span></td>
+            <td>
+              Index of the last key attempted before exhaustion or non-rotatable
+              failure (<span class="pill-code">null</span> if all were
+              blacklisted pre-flight).
+            </td>
+          </tr>
+        </table>
+      </section>
+
+      <section class="doc-section" id="principles">
+        <h2>Design Principles</h2>
+        <h3>Simplicity</h3>
+        <p>
+          A working AI should require only the essential configuration. Optional
+          functionality stays optional.
+        </p>
+        <h3>Progressive Enhancement</h3>
+        <p>
+          Additional capabilities are enabled with
+          <span class="pill-code">.use...()</span> methods. Apps that only need
+          text conversations never have to configure vision, speech, or voice.
+        </p>
+        <h3>Platform Independence</h3>
+        <p>
+          PersonaFlow does not depend on Telegram, Discord, WhatsApp, Express,
+          or any other platform. It focuses solely on conversational AI.
+        </p>
+        <h3>Human-First Conversations</h3>
+        <p>
+          An internal behavioral layer encourages natural conversational
+          responses. Developers define the persona; PersonaFlow ensures the
+          behavior stays consistent.
+        </p>
+        <h3>Single Responsibility</h3>
+        <p>
+          PersonaFlow is responsible for conversation management. Applications
+          remain responsible for interfaces, authentication, scheduling, and
+          platform-specific functionality.
+        </p>
+        <h3>Feedback Metadata</h3>
+        <p>
+          Every response exposes real-time execution metrics, including token
+          consumption, response latency, exact model identifiers, and API key
+          failover trails, giving developers full visibility into quota
+          consumption and system health out of the box.
+        </p>
+      </section>
+
+      <section class="doc-section" id="nongoals">
+        <h2>Non-Goals</h2>
+        <p>
+          These responsibilities belong to the application using the SDK, not
+          the SDK itself:
+        </p>
+        <ul>
+          <li>Messaging platform integrations</li>
+          <li>Authentication</li>
+          <li>Scheduling &amp; queuing</li>
+          <li>Typing indicators</li>
+          <li>Tool or function calling</li>
+          <li>Agent workflows</li>
+          <li>Retrieval-Augmented Generation (RAG)</li>
+          <li>Conversation summarization</li>
+          <li>User profiling</li>
+          <li>Rate limiting</li>
+        </ul>
+      </section>
+
+      <section class="doc-section" id="architecture">
+        <h2>System Map</h2>
+        <p>
+          Developers interact only with the
+          <span class="pill-code">AI</span> class. All processing is coordinated
+          internally by the orchestrator, which delegates to independent,
+          single-purpose services.
+        </p>
+        <div class="arch-diagram">
+          <div class="arch-diagram-inner" id="archDiagramInner">
+            <svg id="archSvg" aria-hidden="true"></svg>
+            <div class="arch-tier">
+              <div class="arch-node top" data-arch-id="ai">AI · Public API</div>
+            </div>
+            <div class="arch-tier">
+              <div class="arch-node" data-arch-id="orchestrator">
+                Orchestrator
+              </div>
+            </div>
+            <div class="arch-tier">
+              <div class="arch-branch-row">
+                <div class="arch-node-wrap">
+                  <div class="arch-node" data-arch-id="memory">Memory</div>
+                  <div class="arch-sub">→ Storage</div>
+                </div>
+                <div class="arch-node" data-arch-id="gemini">Gemini</div>
+                <div class="arch-node" data-arch-id="features">
+                  Feature Services
+                </div>
+              </div>
+            </div>
+            <div class="arch-tier">
+              <div class="arch-node" data-arch-id="response">Response</div>
+            </div>
+          </div>
+        </div>
+        <p class="muted">
+          Hover a node each one maps to a single service module in
+          <span class="pill-code"><a class="inline-link" href="https://github.com/Ace-ux-cmd/personacore/blob/main/docs/architecture.md">Architecture Documentation</a></span>.
+        </p>
+      </section>
+
+      <section class="doc-section" id="flow">
+        <h2>Request Flow</h2>
+        <p>
+          A typical call to <span class="pill-code">handleMessage()</span> moves
+          through validation, optional multimodal processing, the Gemini
+          request, and response construction, in order:
+        </p>
+        <div class="flow-list">
+          <div class="flow-step"><span class="n">1</span> Input Validation</div>
+          <div class="flow-step"><span class="n">2</span> Retrieve History</div>
+          <div class="flow-step optional">
+            <span class="n">3</span> Speech Recognition
+            <span class="tag">optional</span>
+          </div>
+          <div class="flow-step optional">
+            <span class="n">4</span> Vision Processing
+            <span class="tag">optional</span>
+          </div>
+          <div class="flow-step"><span class="n">5</span> Gemini Request</div>
+          <div class="flow-step optional">
+            <span class="n">6</span> Voice Generation
+            <span class="tag">optional</span>
+          </div>
+          <div class="flow-step">
+            <span class="n">7</span> Save Conversation
+          </div>
+          <div class="flow-step">
+            <span class="n">8</span> Build &amp; Return Response
+          </div>
+        </div>
+      </section>
+
+      <section class="doc-section" id="modules">
+        <h2>Module Reference</h2>
+        <h3>AI</h3>
+        <p>
+          The SDK's public interface. Stores configuration, exposes public
+          methods, forwards requests to the orchestrator.
+        </p>
+        <h3>Orchestrator</h3>
+        <p>
+          Coordinates the request lifecycle: validates requests, determines
+          execution flow, coordinates services, and returns the final response.
+        </p>
+        <h3>Memory Service</h3>
+        <p>
+          Retrieves and saves history, deletes history, applies the configured
+          history limit, and selects the active storage backend.
+        </p>
+        <h3>Gemini Service</h3>
+        <p>
+          Builds Gemini requests, injects the configured persona, applies
+          PersonaFlow's conversational behavior layer, manages API key failover,
+          and returns AI responses with metadata.
+        </p>
+        <h3>Feature Services</h3>
+        <p>
+          Independent, optional services for vision processing, speech
+          recognition, and voice generation.
+        </p>
+        <h3>Response Service</h3>
+        <p>Constructs the standardized response object returned by the SDK.</p>
+
+        <h4
+          style="
+            font-family: var(--serif);
+            font-size: 15px;
+            font-weight: 600;
+            margin: 22px 0 10px;
+          "
+        >
+          Response Payloads &amp; Metadata
+        </h4>
+        <p>
+          <span class="pill-code">handleMessage()</span> returns a
+          strongly-typed discriminated union based on the
+          <span class="pill-code">success</span> field. Applications should
+          branch directly on <span class="pill-code">response.success</span> to
+          guarantee type safety and access operational metadata.
+        </p>
+        <div class="code-block">
+          <div class="code-head">
+            <span>javascript</span
+            ><button
+              class="copy-btn"
+              data-copy='const response = await ai.handleMessage({ userId: "user_123", text: "Hello" });
+
+if (response.success) {
+  console.log(response.text, response.metadata.responseTime);
+} else {
+  console.error(response.error.code, response.error.message);
+}'
+            >
+              Copy
+            </button>
+          </div>
+          <pre><span class="tok-key">const</span> response = <span class="tok-key">await</span> ai.<span class="tok-fn">handleMessage</span>({ userId: <span class="tok-str">"user_123"</span>, text: <span class="tok-str">"Hello"</span> });
+
+<span class="tok-key">if</span> (response.success) {
+  console.<span class="tok-fn">log</span>(response.text, response.metadata.responseTime);
+} <span class="tok-key">else</span> {
+  console.<span class="tok-fn">error</span>(response.error.code, response.error.message);
+}</pre>
+        </div>
+
+        <h5
+          style="
+            font-family: var(--serif);
+            font-size: 14px;
+            font-weight: 600;
+            margin: 24px 0 8px;
+          "
+        >
+          1. Successful Response (success: true)
+        </h5>
+        <p>
+          When execution completes without uncaught errors,
+          <span class="pill-code">handleMessage()</span> returns the generated
+          content along with full telemetry regarding token consumption, API key
+          execution paths, and model specs.
+        </p>
+        <div class="code-block">
+          <div class="code-head">
+            <span>json</span
+            ><button
+              class="copy-btn"
+              data-copy='{
+  "success": true,
+  "text": "The operational output string...",
+  "audio": "<Buffer ...>",
+  "metadata": {
+    "tokenUsage": {
+      "promptTokenCount": 42,
+      "candidatesTokenCount": 128,
+      "totalTokenCount": 170
+    },
+    "apiKeyIndex": 1,
+    "rotated": true,
+    "keysTriedThisRequest": 2,
+    "responseTime": 348,
+    "finishReason": "STOP",
+    "historyLimit": 10,
+    "model": {
+      "text": "gemini-3.1-flash-lite",
+      "speechRecognition": null,
+      "voiceOutput": null
+    }
+  }
+}'
+            >
+              Copy
+            </button>
+          </div>
+          <pre>{
+  <span class="tok-prop">"success"</span>: <span class="tok-key">true</span>,
+  <span class="tok-prop">"text"</span>: <span class="tok-str">"The operational output string..."</span>,
+  <span class="tok-prop">"audio"</span>: <span class="tok-str">"&lt;Buffer ...&gt;"</span>,
+  <span class="tok-prop">"metadata"</span>: {
+    <span class="tok-prop">"tokenUsage"</span>: {
+      <span class="tok-prop">"promptTokenCount"</span>: <span class="tok-key">42</span>,
+      <span class="tok-prop">"candidatesTokenCount"</span>: <span class="tok-key">128</span>,
+      <span class="tok-prop">"totalTokenCount"</span>: <span class="tok-key">170</span>
+    },
+    <span class="tok-prop">"apiKeyIndex"</span>: <span class="tok-key">1</span>,
+    <span class="tok-prop">"rotated"</span>: <span class="tok-key">true</span>,
+    <span class="tok-prop">"keysTriedThisRequest"</span>: <span class="tok-key">2</span>,
+    <span class="tok-prop">"responseTime"</span>: <span class="tok-key">348</span>,
+    <span class="tok-prop">"finishReason"</span>: <span class="tok-str">"STOP"</span>,
+    <span class="tok-prop">"historyLimit"</span>: <span class="tok-key">10</span>,
+    <span class="tok-prop">"model"</span>: {
+      <span class="tok-prop">"text"</span>: <span class="tok-str">"gemini-3.1-flash-lite"</span>,
+      <span class="tok-prop">"speechRecognition"</span>: <span class="tok-key">null</span>,
+      <span class="tok-prop">"voiceOutput"</span>: <span class="tok-key">null</span>
+    }
+  }
+}</pre>
+        </div>
+
+        <p
+          style="
+            margin-top: 20px;
+            font-size: 13px;
+            color: var(--doc-muted);
+            font-family: var(--mono);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+          "
+        >
+          Field Reference Successful Response
+        </p>
+        <table>
+          <tr>
+            <th>Key</th>
+            <th>Type</th>
+            <th>Description</th>
+          </tr>
+          <tr>
+            <td><span class="pill-code">success</span></td>
+            <td>boolean</td>
+            <td>
+              Always <span class="pill-code">true</span> on this branch of the
+              union.
+            </td>
+          </tr>
+          <tr>
+            <td><span class="pill-code">text</span></td>
+            <td>string</td>
+            <td>
+              The generated text output. Always present by default; omitted
+              entirely if
+              <span class="pill-code"
+                >useVoiceOutput({ includeText: false })</span
+              >
+              is configured.
+            </td>
+          </tr>
+          <tr>
+            <td><span class="pill-code">audio</span></td>
+            <td>Buffer</td>
+            <td>
+              Synthesized speech audio. Only present when
+              <span class="pill-code">useVoiceOutput()</span> is enabled and
+              voice generation was triggered for this response.
+            </td>
+          </tr>
+          <tr>
+            <td><span class="pill-code">metadata.tokenUsage</span></td>
+            <td>object</td>
+            <td>
+              Container for Gemini token accounting. Resolves to
+              <span class="pill-code">{}</span> if the upstream API returns no
+              usage data.
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <span class="pill-code"
+                >metadata.tokenUsage.promptTokenCount</span
+              >
+            </td>
+            <td>number</td>
+            <td>
+              Tokens consumed by the input prompt (persona, history, and the
+              current message combined).
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <span class="pill-code"
+                >metadata.tokenUsage.candidatesTokenCount</span
+              >
+            </td>
+            <td>number</td>
+            <td>Tokens consumed by the generated response candidate(s).</td>
+          </tr>
+          <tr>
+            <td>
+              <span class="pill-code">metadata.tokenUsage.totalTokenCount</span>
+            </td>
+            <td>number</td>
+            <td>Sum of prompt and candidate tokens for this request.</td>
+          </tr>
+          <tr>
+            <td><span class="pill-code">metadata.apiKeyIndex</span></td>
+            <td>number</td>
+            <td>
+              Index of the API key that ultimately succeeded for this request.
+            </td>
+          </tr>
+          <tr>
+            <td><span class="pill-code">metadata.rotated</span></td>
+            <td>boolean</td>
+            <td>
+              <span class="pill-code">true</span> if automatic key failover
+              occurred during this execution turn.
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <span class="pill-code">metadata.keysTriedThisRequest</span>
+            </td>
+            <td>number</td>
+            <td>
+              Total count of API keys evaluated before a valid response was
+              received.
+            </td>
+          </tr>
+          <tr>
+            <td><span class="pill-code">metadata.responseTime</span></td>
+            <td>number</td>
+            <td>Total execution time for the request, in milliseconds.</td>
+          </tr>
+          <tr>
+            <td><span class="pill-code">metadata.finishReason</span></td>
+            <td>string</td>
+            <td>
+              Gemini's reported reason for ending generation (e.g.
+              <span class="pill-code">"STOP"</span>).
+            </td>
+          </tr>
+          <tr>
+            <td><span class="pill-code">metadata.historyLimit</span></td>
+            <td>number</td>
+            <td>
+              The configured in-memory message cap in effect for this session at
+              the time of the request.
+            </td>
+          </tr>
+          <tr>
+            <td><span class="pill-code">metadata.model.text</span></td>
+            <td>string | null</td>
+            <td>
+              Model identifier used for text generation.
+              <span class="pill-code">null</span> if the text stage was not
+              active.
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <span class="pill-code">metadata.model.speechRecognition</span>
+            </td>
+            <td>string | null</td>
+            <td>
+              Model identifier used for speech-to-text.
+              <span class="pill-code">null</span> unless
+              <span class="pill-code">useSpeechRecognition()</span> processed
+              input on this turn.
+            </td>
+          </tr>
+          <tr>
+            <td><span class="pill-code">metadata.model.voiceOutput</span></td>
+            <td>string | null</td>
+            <td>
+              Model identifier used for speech synthesis.
+              <span class="pill-code">null</span> unless
+              <span class="pill-code">useVoiceOutput()</span> generated audio on
+              this turn.
+            </td>
+          </tr>
+        </table>
+
+        <h4
+          style="
+            font-family: var(--serif);
+            font-size: 15px;
+            font-weight: 600;
+            margin: 26px 0 10px;
+          "
+        >
+          Field Behavior &amp; Rules
+        </h4>
+        <ul>
+          <li>
+            <strong>text vs. audio Payload Delivery:</strong>
+            <ul>
+              <li>
+                <strong>Default (Text Only):</strong>
+                <span class="pill-code">text</span> is always a string.
+                <span class="pill-code">audio</span> is undefined.
+              </li>
+              <li>
+                <strong>Voice Output Active (useVoiceOutput):</strong> If
+                <span class="pill-code">includeText: false</span> was set in the
+                modifier configuration, <span class="pill-code">text</span> is
+                omitted entirely from the return object, leaving only
+                <span class="pill-code">audio</span> (Buffer). If
+                <span class="pill-code">includeText: true</span> (default), both
+                <span class="pill-code">text</span> and
+                <span class="pill-code">audio</span> are populated.
+              </li>
+            </ul>
+          </li>
+          <li>
+            <strong>Key Rotation Auditing:</strong>
+            <ul>
+              <li>
+                <span class="pill-code">apiKeyIndex</span>: Reflects the exact
+                index of the API key that succeeded.
+              </li>
+              <li>
+                <span class="pill-code">rotated</span>:
+                <span class="pill-code">true</span> if automatic key failover
+                occurred during this execution turn.
+              </li>
+              <li>
+                <span class="pill-code">keysTriedThisRequest</span>: Total count
+                of API keys evaluated before receiving a valid response.
+              </li>
+              <li>
+                <em>Note:</em> In multi-stage requests (e.g., text generation
+                followed by audio synthesis), rotation metadata reflects the
+                final outbound API call executed in the chain.
+              </li>
+            </ul>
+          </li>
+          <li>
+            <strong>tokenUsage Structure:</strong> Echoes Gemini usage
+            statistics. If the upstream API returns no usage data, this resolves
+            to an empty object <span class="pill-code">{}</span> rather than
+            <span class="pill-code">null</span>.
+          </li>
+          <li>
+            <strong>model Map:</strong> Tracks active model identifiers utilized
+            across pipeline stages. Inactive stages return
+            <span class="pill-code">null</span>.
+          </li>
+        </ul>
+
+        <h5
+          style="
+            font-family: var(--serif);
+            font-size: 14px;
+            font-weight: 600;
+            margin: 26px 0 8px;
+          "
+        >
+          2. Failure Response (success: false)
+        </h5>
+        <p>
+          If an operational or upstream error prevents fulfillment,
+          <span class="pill-code">handleMessage()</span> catches the error
+          internally and returns a structured failure object.
+        </p>
+        <div class="code-block">
+          <div class="code-head">
+            <span>json</span
+            ><button
+              class="copy-btn"
+              data-copy='{
+  "success": false,
+  "error": {
+    "code": "RATE_LIMIT",
+    "message": "Resource has been exhausted (e.g. check quota)."
+  },
+  "metadata": {
+    "keyIndex": 2,
+    "model": "gemini-3.1-flash-lite",
+    "responseTime": 182
+  }
+}'
+            >
+              Copy
+            </button>
+          </div>
+          <pre>{
+  <span class="tok-prop">"success"</span>: <span class="tok-key">false</span>,
+  <span class="tok-prop">"error"</span>: {
+    <span class="tok-prop">"code"</span>: <span class="tok-str">"RATE_LIMIT"</span>,
+    <span class="tok-prop">"message"</span>: <span class="tok-str">"Resource has been exhausted (e.g. check quota)."</span>
+  },
+  <span class="tok-prop">"metadata"</span>: {
+    <span class="tok-prop">"keyIndex"</span>: <span class="tok-key">2</span>,
+    <span class="tok-prop">"model"</span>: <span class="tok-str">"gemini-3.1-flash-lite"</span>,
+    <span class="tok-prop">"responseTime"</span>: <span class="tok-key">182</span>
+  }
+}</pre>
+        </div>
+
+        <p
+          style="
+            margin-top: 20px;
+            font-size: 13px;
+            color: var(--doc-muted);
+            font-family: var(--mono);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+          "
+        >
+          Field Reference Failure Response
+        </p>
+        <table>
+          <tr>
+            <th>Key</th>
+            <th>Type</th>
+            <th>Description</th>
+          </tr>
+          <tr>
+            <td><span class="pill-code">success</span></td>
+            <td>boolean</td>
+            <td>
+              Always <span class="pill-code">false</span> on this branch of the
+              union.
+            </td>
+          </tr>
+          <tr>
+            <td><span class="pill-code">error.code</span></td>
+            <td>string</td>
+            <td>
+              Deterministic error domain identifier. See the Error Code
+              Reference below for the full set.
+            </td>
+          </tr>
+          <tr>
+            <td><span class="pill-code">error.message</span></td>
+            <td>string</td>
+            <td>
+              Human-readable description of the failure, generally forwarded
+              from the upstream provider or the internal validator that raised
+              it.
+            </td>
+          </tr>
+          <tr>
+            <td><span class="pill-code">metadata.keyIndex</span></td>
+            <td>number | null</td>
+            <td>
+              Index of the last API key attempted prior to failure.
+              <span class="pill-code">null</span> if the key pool was already
+              exhausted before the request was issued (<span class="pill-code"
+                >ALL_KEYS_UNAVAILABLE</span
+              >).
+            </td>
+          </tr>
+          <tr>
+            <td><span class="pill-code">metadata.model</span></td>
+            <td>string</td>
+            <td>Model identifier that was targeted at the time of failure.</td>
+          </tr>
+          <tr>
+            <td><span class="pill-code">metadata.responseTime</span></td>
+            <td>number</td>
+            <td>
+              Time elapsed before the failure was raised, in milliseconds.
+            </td>
+          </tr>
+        </table>
+
+        <h4
+          style="
+            font-family: var(--serif);
+            font-size: 15px;
+            font-weight: 600;
+            margin: 26px 0 10px;
+          "
+        >
+          Error Code Reference
+        </h4>
+        <p>
+          The <span class="pill-code">error.code</span> field categorizes
+          execution failures into deterministic error domain types:
+        </p>
+        <table>
+          <tr>
+            <th>Error code</th>
+            <th>Cause / HTTP Status</th>
+            <th>Failover Behavior</th>
+          </tr>
+          <tr>
+            <td><span class="pill-code">RATE_LIMIT</span></td>
+            <td>HTTP 429</td>
+            <td>Automatically rotates key and retries if clean keys remain.</td>
+          </tr>
+          <tr>
+            <td><span class="pill-code">AUTH_ERROR</span></td>
+            <td>HTTP 401 or HTTP 403</td>
+            <td>Blacklists key, automatically rotates, and retries.</td>
+          </tr>
+          <tr>
+            <td><span class="pill-code">UPSTREAM_ERROR</span></td>
+            <td>HTTP 5xx</td>
+            <td>Automatically rotates key and retries.</td>
+          </tr>
+          <tr>
+            <td><span class="pill-code">NETWORK_ERROR</span></td>
+            <td>Connection-level failure (no HTTP response)</td>
+            <td>Automatically rotates key and retries.</td>
+          </tr>
+          <tr>
+            <td><span class="pill-code">REQUEST_ERROR</span></td>
+            <td>Invalid payload or HTTP 400 / 404</td>
+            <td>
+              <strong>Non-rotatable.</strong> Fails immediately without burning
+              other keys.
+            </td>
+          </tr>
+          <tr>
+            <td><span class="pill-code">ALL_KEYS_UNAVAILABLE</span></td>
+            <td>Pre-flight key pool exhaustion</td>
+            <td>
+              Fails immediately. All keys in the pool are currently blacklisted.
+            </td>
+          </tr>
+          <tr>
+            <td><span class="pill-code">NO_AUDIO_RETURNED</span></td>
+            <td>Synthesis stage failure</td>
+            <td>
+              Pipeline completed, but the speech model returned 0 audio bytes.
+            </td>
+          </tr>
+          <tr>
+            <td><span class="pill-code">AUDIO_TRANSCODING_ERROR</span></td>
+            <td>
+              <span class="pill-code">useVoiceOutput()</span> synthesis stage
+              failure
+            </td>
+            <td>
+              <strong>Non-rotatable.</strong> Fails immediately; not a
+              key-related failure.
+            </td>
+          </tr>
+          <tr>
+            <td><span class="pill-code">STORAGE_ERROR</span></td>
+            <td>
+              <span class="pill-code">useMemory()</span> persistence stage
+              failure
+            </td>
+            <td>
+              <strong>Non-rotatable.</strong> Fails immediately; not a
+              key-related failure.
+            </td>
+          </tr>
+        </table>
+
+        <div class="callout violet">
+          <strong>Key Index Context:</strong> In failure responses,
+          <span class="pill-code">metadata.keyIndex</span> specifies the index
+          of the <strong>last key attempted</strong> prior to
+          exhaustion/failure. If the pool was completely exhausted prior to
+          issuing the request (<span class="pill-code"
+            >ALL_KEYS_UNAVAILABLE</span
+          >), <span class="pill-code">metadata.keyIndex</span> resolves to
+          <span class="pill-code">null</span>.
+        </div>
+
+        <h3>Failure Cases</h3>
+        <p>
+          PersonaFlow draws a hard line between two categories of failure:
+          developer-side mistakes, which throw synchronously before any network
+          or storage call, and operational or runtime failures, which resolve as
+          a structured <span class="pill-code">{ success: false }</span> object
+          instead.
+        </p>
+
+        <h4
+          style="
+            font-family: var(--serif);
+            font-size: 15px;
+            font-weight: 600;
+            margin: 22px 0 10px;
+          "
+        >
+          Throws (constructor / synchronous validation)
+        </h4>
+
+        <p style="margin-top: 18px">
+          <span class="pill-code">new AI(config)</span>
+        </p>
+        <ul>
+          <li>No config object, or not an object</li>
+          <li>
+            <span class="pill-code">apiKeys</span> missing, not an array, empty
+            array, or contains a non-string/empty-string entry
+          </li>
+          <li>
+            <span class="pill-code">persona</span> missing or not a string
+          </li>
+          <li>
+            <span class="pill-code">historyLimit</span> provided but not a
+            positive number
+          </li>
+        </ul>
+
+        <p style="margin-top: 18px">
+          <span class="pill-code">ai.useMemory(mongoUri)</span>
+        </p>
+        <ul>
+          <li>
+            <span class="pill-code">mongoUri</span> missing or not a string
+          </li>
+          <li>
+            <em
+              >(does not throw for a bad/unreachable URI. That fails later,
+              structured, at first use.)</em
+            >
+          </li>
+        </ul>
+
+        <p style="margin-top: 18px">
+          <span class="pill-code">ai.useVoiceOutput(options)</span>
+        </p>
+        <ul>
+          <li>
+            <span class="pill-code">probability</span> provided but not a
+            number, or outside 0 to 1
+          </li>
+          <li>
+            <span class="pill-code">includeText</span> provided but not a
+            boolean
+          </li>
+        </ul>
+
+        <p style="margin-top: 18px">
+          <span class="pill-code">ai.handleMessage(request)</span>, all
+          synchronous, before any model/storage call:
+        </p>
+        <ul>
+          <li>No request object</li>
+          <li>Missing/non-string <span class="pill-code">userId</span></li>
+          <li>
+            None of <span class="pill-code">text</span>/<span class="pill-code"
+              >image</span
+            >/<span class="pill-code">voice</span> provided
+          </li>
+          <li>
+            <span class="pill-code">image</span> provided but not a Buffer
+          </li>
+          <li>
+            <span class="pill-code">voice</span> provided but not a Buffer
+          </li>
+          <li><span class="pill-code">text</span> provided but not a string</li>
+          <li>
+            <span class="pill-code">voice</span> provided but
+            <span class="pill-code">useSpeechRecognition()</span> was never
+            called
+          </li>
+          <li>
+            <span class="pill-code">image</span> provided but
+            <span class="pill-code">useVision()</span> was never called
+          </li>
+        </ul>
+
+        <p style="margin-top: 18px">
+          <span class="pill-code">ai.getHistory(userId, options)</span> /
+          <span class="pill-code">ai.deleteHistory(userId, options)</span>
+        </p>
+        <ul>
+          <li>Missing/non-string <span class="pill-code">userId</span></li>
+          <li>
+            <em
+              >(nothing else throws. A storage failure past this point resolves
+              structured, per the fix above.)</em
+            >
+          </li>
+        </ul>
+
+        <p style="margin-top: 18px">
+          Internal/lower-level throws that only matter if you're calling these
+          classes directly (not through <span class="pill-code">AI</span>, which
+          never lets these conditions occur):
+        </p>
+        <ul>
+          <li>
+            <span class="pill-code">ArrayStore</span>/<span class="pill-code"
+              >MongoStore</span
+            >
+            constructor: <span class="pill-code">historyLimit &lt; 1</span>
+          </li>
+          <li>
+            <span class="pill-code">ArrayStore.saveMessage</span>/<span
+              class="pill-code"
+              >MongoStore.saveMessage</span
+            >: missing <span class="pill-code">userId</span>, or message missing
+            <span class="pill-code">role</span>/<span class="pill-code"
+              >text</span
+            >
+          </li>
+          <li>
+            <span class="pill-code">VisionService.buildImagePart</span>:
+            non-Buffer <span class="pill-code">image</span>
+          </li>
+          <li>
+            <span class="pill-code">SpeechRecognitionService.transcribe</span>:
+            non-Buffer <span class="pill-code">voice</span>
+          </li>
+          <li>
+            <span class="pill-code">audioTranscoder.parseSampleRate</span>:
+            unparseable <span class="pill-code">mimeType</span>. This is now
+            caught inside
+            <span class="pill-code">voiceOutput.generate()</span> and converted
+            to a structured
+            <span class="pill-code">AUDIO_TRANSCODING_ERROR</span>, so it no
+            longer surfaces as a throw through
+            <span class="pill-code">handleMessage()</span>.
+          </li>
+          <li>
+            <span class="pill-code">audioTranscoder.pcmToOggOpus</span>: ffmpeg
+            spawn/exit failure. Same, now caught and converted structured.
+          </li>
+        </ul>
+
+        <h4
+          style="
+            font-family: var(--serif);
+            font-size: 15px;
+            font-weight: 600;
+            margin: 26px 0 10px;
+          "
+        >
+          Does Not Throw: Resolves as { success: false, error, metadata }
+        </h4>
+        <ul>
+          <li>
+            Gemini call fails (rate limit, auth, upstream, network, bad
+            request): <span class="pill-code">RATE_LIMIT</span> /
+            <span class="pill-code">AUTH_ERROR</span> /
+            <span class="pill-code">UPSTREAM_ERROR</span> /
+            <span class="pill-code">NETWORK_ERROR</span> /
+            <span class="pill-code">REQUEST_ERROR</span>
+          </li>
+          <li>
+            All configured keys currently blacklisted:
+            <span class="pill-code">ALL_KEYS_UNAVAILABLE</span>
+          </li>
+          <li>
+            Gemini TTS returns no audio part:
+            <span class="pill-code">NO_AUDIO_RETURNED</span>
+          </li>
+          <li>
+            Audio transcoding fails after successful TTS:
+            <span class="pill-code">AUDIO_TRANSCODING_ERROR</span>
+          </li>
+          <li>
+            Storage backend fails (history fetch, or persisting a turn, in
+            <span class="pill-code">handleMessage</span>; or any call to
+            <span class="pill-code">getHistory</span>/<span class="pill-code"
+              >deleteHistory</span
+            >): <span class="pill-code">STORAGE_ERROR</span>
+          </li>
+        </ul>
+
+        <h4
+          style="
+            font-family: var(--serif);
+            font-size: 15px;
+            font-weight: 600;
+            margin: 26px 0 10px;
+          "
+        >
+          Error Handling Rules
+        </h4>
+        <table>
+          <tr>
+            <th>Failure mode</th>
+            <th>When it applies</th>
+          </tr>
+          <tr>
+            <td><strong>Throws an Exception</strong></td>
+            <td>
+              Developer-side validation errors (e.g., missing parameters,
+              invalid constructor options, malformed payloads). Execution halts
+              synchronously prior to network dispatch.
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <strong>Returns Structured Failure</strong> (<span
+                class="pill-code"
+                >{ success: false }</span
+              >)
+            </td>
+            <td>
+              Operational and runtime failures (e.g., Gemini upstream errors,
+              MongoDB connection drops, ffmpeg binary execution issues).
+            </td>
+          </tr>
+        </table>
+
+        <p class="muted">
+          Each module validates its own input and throws descriptive errors.
+          PersonaFlow does not silently ignore failures: errors propagate upward
+          to the public API.
+        </p>
+      </section>
+
+      <section class="doc-section" id="storage">
+        <h2>Storage Layer</h2>
+        <p>
+          PersonaFlow currently supports two storage implementations, both
+          exposing the same interface so the Memory Service can switch between
+          them transparently.
+        </p>
+        <table>
+          <tr>
+            <th>Backend</th>
+            <th>Use case</th>
+          </tr>
+          <tr>
+            <td>Internal in-memory storage</td>
+            <td>Default. No setup, history cleared on restart.</td>
+          </tr>
+          <tr>
+            <td>MongoDB storage</td>
+            <td>
+              Enabled via <span class="pill-code">useMemory(url)</span>,
+              persistent across restarts.
+            </td>
+          </tr>
+        </table>
+
+        <h3>Storage Layer API</h3>
+        <p>
+          The Storage Layer provides direct state management utilities to
+          inspect or modify session history outside of the automated
+          <span class="pill-code">handleMessage()</span> pipeline. Both
+          in-memory and persistent store drivers (like
+          <span class="pill-code">MongoStore</span>) implement these underlying
+          methods.
+        </p>
+
+        <h4
+          style="
+            font-family: var(--serif);
+            font-size: 15px;
+            font-weight: 600;
+            margin: 22px 0 10px;
+          "
+        >
+          getHistory()
+        </h4>
+        <p>Retrieves recorded conversation history for a given session.</p>
+        <div class="code-block">
+          <div class="code-head">
+            <span>javascript</span
+            ><button
+              class="copy-btn"
+              data-copy="const history = await ai.getHistory(userId, options?);"
+            >
+              Copy
+            </button>
+          </div>
+          <pre><span class="tok-key">const</span> history = <span class="tok-key">await</span> ai.<span class="tok-fn">getHistory</span>(userId, options?);</pre>
+        </div>
+
+        <p
+          style="
+            margin-top: 20px;
+            font-size: 13px;
+            color: var(--doc-muted);
+            font-family: var(--mono);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+          "
+        >
+          Parameters
+        </p>
+        <table>
+          <tr>
+            <th>Parameter</th>
+            <th>Type</th>
+            <th>Required</th>
+            <th>Description</th>
+          </tr>
+          <tr>
+            <td><span class="pill-code">userId</span></td>
+            <td>string</td>
+            <td><strong>Yes</strong></td>
+            <td>Session identifier associated with the stored state.</td>
+          </tr>
+          <tr>
+            <td><span class="pill-code">options.limit</span></td>
+            <td>number</td>
+            <td>No</td>
+            <td>Number of recent messages to retrieve.</td>
+          </tr>
+        </table>
+
+        <h5
+          style="
+            font-family: var(--serif);
+            font-size: 14px;
+            font-weight: 600;
+            margin: 22px 0 8px;
+          "
+        >
+          Behavior &amp; Rules
+        </h5>
+        <ul>
+          <li>
+            <strong>Without limit:</strong> Returns the
+            <strong>entire recorded history</strong> for the specified
+            <span class="pill-code">userId</span>.
+          </li>
+          <li>
+            <strong>With limit:</strong> Returns only the
+            <strong>most recent X messages</strong> from the tail of the message
+            log.
+          </li>
+        </ul>
+        <div class="code-block">
+          <div class="code-head">
+            <span>javascript</span
+            ><button
+              class="copy-btn"
+              data-copy='// Retrieve complete history
+const fullHistory = await ai.getHistory("user_123");
+
+// Retrieve only the 5 most recent messages
+const recentHistory = await ai.getHistory("user_123", { limit: 5 });'
+            >
+              Copy
+            </button>
+          </div>
+          <pre><span class="tok-com">// Retrieve complete history</span>
+<span class="tok-key">const</span> fullHistory = <span class="tok-key">await</span> ai.<span class="tok-fn">getHistory</span>(<span class="tok-str">"user_123"</span>);
+
+<span class="tok-com">// Retrieve only the 5 most recent messages</span>
+<span class="tok-key">const</span> recentHistory = <span class="tok-key">await</span> ai.<span class="tok-fn">getHistory</span>(<span class="tok-str">"user_123"</span>, { limit: <span class="tok-key">5</span> });</pre>
+        </div>
+
+        <h4
+          style="
+            font-family: var(--serif);
+            font-size: 15px;
+            font-weight: 600;
+            margin: 30px 0 10px;
+          "
+        >
+          deleteHistory()
+        </h4>
+        <p>Purges stored message history for a given session.</p>
+        <div class="code-block">
+          <div class="code-head">
+            <span>javascript</span
+            ><button
+              class="copy-btn"
+              data-copy="await ai.deleteHistory(userId, options?);"
+            >
+              Copy
+            </button>
+          </div>
+          <pre><span class="tok-key">await</span> ai.<span class="tok-fn">deleteHistory</span>(userId, options?);</pre>
+        </div>
+
+        <p
+          style="
+            margin-top: 20px;
+            font-size: 13px;
+            color: var(--doc-muted);
+            font-family: var(--mono);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+          "
+        >
+          Parameters
+        </p>
+        <table>
+          <tr>
+            <th>Parameter</th>
+            <th>Type</th>
+            <th>Required</th>
+            <th>Description</th>
+          </tr>
+          <tr>
+            <td><span class="pill-code">userId</span></td>
+            <td>string</td>
+            <td><strong>Yes</strong></td>
+            <td>Session identifier associated with the stored state.</td>
+          </tr>
+          <tr>
+            <td><span class="pill-code">options.limit</span></td>
+            <td>number</td>
+            <td>No</td>
+            <td>Number of recent messages to purge from state.</td>
+          </tr>
+        </table>
+
+        <h5
+          style="
+            font-family: var(--serif);
+            font-size: 14px;
+            font-weight: 600;
+            margin: 22px 0 8px;
+          "
+        >
+          Behavior &amp; Rules
+        </h5>
+        <ul>
+          <li>
+            <strong>Without limit:</strong>
+            <strong>Clears all history</strong> for
+            <span class="pill-code">userId</span>, completely resetting session
+            state.
+          </li>
+          <li>
+            <strong>With limit:</strong> Purges only the
+            <strong>most recent X messages</strong>, preserving earlier
+            conversation context.
+          </li>
+        </ul>
+        <div class="code-block">
+          <div class="code-head">
+            <span>javascript</span
+            ><button
+              class="copy-btn"
+              data-copy='// Purge complete session state
+await ai.deleteHistory("user_123");
+
+// Roll back state by deleting the last 2 messages
+await ai.deleteHistory("user_123", { limit: 2 });'
+            >
+              Copy
+            </button>
+          </div>
+          <pre><span class="tok-com">// Purge complete session state</span>
+<span class="tok-key">await</span> ai.<span class="tok-fn">deleteHistory</span>(<span class="tok-str">"user_123"</span>);
+
+<span class="tok-com">// Roll back state by deleting the last 2 messages</span>
+<span class="tok-key">await</span> ai.<span class="tok-fn">deleteHistory</span>(<span class="tok-str">"user_123"</span>, { limit: <span class="tok-key">2</span> });</pre>
+        </div>
+
+        <div class="callout violet">
+          <strong>Error Handling Note:</strong> If using
+          <span class="pill-code">useMemory(process.env.MONGODB_URL)</span> and
+          the underlying database connection fails or drops,
+          <span class="pill-code">getHistory()</span> and
+          <span class="pill-code">deleteHistory()</span> do not throw. They
+          resolve with a
+          <span class="pill-code">{ success: false, error }</span> object
+          instead, consistent with the rest of the SDK's operational-failure
+          handling. Check the result's
+          <span class="pill-code">success</span> field rather than wrapping
+          these calls in try/catch.
+        </div>
+      </section>
+
+      <section class="doc-section" id="playground">
+        <h2>Playground</h2>
+        <p>
+          Try PersonaFlow's methods directly from the docs. Editable fields are
+          highlighted; everything else reflects a realistic, locked
+          configuration.
+        </p>
+        <div class="pg-status">
+          Live. Requests hit a real PersonaFlow server at
+          <code id="pgBaseUrlLabel"></code>.
+        </div>
+
+        <h3 id="pg-handlemessage" style="scroll-margin-top: 78px">
+          handleMessage()
+        </h3>
+        <p>
+          Dispatches a message through the core pipeline and returns the
+          generated response.
+        </p>
+
+        <div class="pg-widget" data-pg="handleMessage">
+          <div class="pg-tabs" role="tablist">
+            <button
+              class="pg-tab is-active"
+              data-pg-tab="code"
+              role="tab"
+              aria-selected="true"
+            >
+              Code
+            </button>
+            <button
+              class="pg-tab"
+              data-pg-tab="metadata"
+              role="tab"
+              aria-selected="false"
+            >
+              Response Metadata
+            </button>
+            <button
+              class="pg-tab"
+              data-pg-tab="result"
+              role="tab"
+              aria-selected="false"
+            >
+              Result
+            </button>
+          </div>
+
+          <div class="pg-panel is-active" data-pg-panel="code">
+            <pre
+              class="pg-code"
+            ><span class="tok-key">const</span> ai = <span class="tok-key">new</span> <span class="tok-fn">AI</span>({
+  apiKeys: [<span class="tok-str">"••••••••••••"</span>],
+  persona: <span class="tok-str">`You are Anna. Sarcastic, intelligent, concise.`</span>
+});
+
+<span class="tok-key">const</span> response = <span class="tok-key">await</span> ai.<span class="tok-fn">handleMessage</span>({
+  userId: <span class="tok-str">"user_12345"</span>,
+  text: <span class="pg-field-wrap"><textarea class="pg-field" data-pg-field="text" rows="2" maxlength="280" spellcheck="false">Hello! What can you help me with?</textarea></span>
+});</pre>
+            <div class="pg-error" aria-live="polite"></div>
+            <div class="pg-run-row">
+              <button class="pg-run">Run</button>
+              <div class="pg-log" aria-live="polite"></div>
+            </div>
+          </div>
+
+          <div class="pg-panel" data-pg-panel="metadata">
+            <pre class="pg-code pg-output" data-pg-output="metadata">
+Run the request to see response metadata here.</pre
+            >
+          </div>
+
+          <div class="pg-panel" data-pg-panel="result">
+            <pre class="pg-code pg-output" data-pg-output="result">
+Run the request to see the result here.</pre
+            >
+          </div>
+        </div>
+
+        <h3 id="pg-usevision" style="scroll-margin-top: 78px">useVision()</h3>
+        <p>
+          Sends an image alongside a message and returns Gemini's interpretation
+          of it.
+        </p>
+
+        <div class="pg-widget" data-pg="useVision">
+          <div class="pg-tabs" role="tablist">
+            <button
+              class="pg-tab is-active"
+              data-pg-tab="code"
+              role="tab"
+              aria-selected="true"
+            >
+              Code
+            </button>
+            <button
+              class="pg-tab"
+              data-pg-tab="metadata"
+              role="tab"
+              aria-selected="false"
+            >
+              Response Metadata
+            </button>
+            <button
+              class="pg-tab"
+              data-pg-tab="result"
+              role="tab"
+              aria-selected="false"
+            >
+              Result
+            </button>
+          </div>
+
+          <div class="pg-panel is-active" data-pg-panel="code">
+            <pre
+              class="pg-code"
+            ><span class="tok-key">const</span> ai = <span class="tok-key">new</span> <span class="tok-fn">AI</span>({
+  apiKeys: [<span class="tok-str">"••••••••••••"</span>],
+  persona: <span class="tok-str">`You are Anna. Sarcastic, intelligent, concise.`</span>
+});
+
+ai.<span class="tok-fn">useVision</span>();
+
+<span class="tok-key">const</span> response = <span class="tok-key">await</span> ai.<span class="tok-fn">handleMessage</span>({
+  userId: <span class="tok-str">"user_12345"</span>,
+  text: <span class="tok-str">"What's in this image?"</span>,
+  image: <span class="pg-field-wrap"></span></pre>
+            <label class="pg-upload">
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                class="pg-file-input"
+                data-pg-accept-label=".jpg, .png, .webp  up to 3MB"
+                data-pg-maxbytes="3145728"
+              />
+              <span class="pg-upload-text"
+                >Choose an image. .jpg, .png, .webp, up to 3MB.</span
+              >
+            </label>
+            <div class="pg-file-name" aria-live="polite"></div>
+            <pre class="pg-code" style="margin-top: -6px">});</pre>
+            <div class="pg-error" aria-live="polite"></div>
+            <div class="pg-run-row">
+              <button class="pg-run" disabled>Run</button>
+              <div class="pg-log" aria-live="polite"></div>
+            </div>
+          </div>
+
+          <div class="pg-panel" data-pg-panel="metadata">
+            <pre class="pg-code pg-output" data-pg-output="metadata">
+Run the request to see response metadata here.</pre
+            >
+          </div>
+
+          <div class="pg-panel" data-pg-panel="result">
+            <pre class="pg-code pg-output" data-pg-output="result">
+Run the request to see the result here.</pre
+            >
+          </div>
+        </div>
+
+        <h3 id="pg-usespeechrecognition" style="scroll-margin-top: 78px">
+          useSpeechRecognition()
+        </h3>
+        <p>
+          Transcribes spoken audio into text before it enters the conversation.
+        </p>
+
+        <div class="pg-widget" data-pg="useSpeechRecognition">
+          <div class="pg-tabs" role="tablist">
+            <button
+              class="pg-tab is-active"
+              data-pg-tab="code"
+              role="tab"
+              aria-selected="true"
+            >
+              Code
+            </button>
+            <button
+              class="pg-tab"
+              data-pg-tab="metadata"
+              role="tab"
+              aria-selected="false"
+            >
+              Response Metadata
+            </button>
+            <button
+              class="pg-tab"
+              data-pg-tab="result"
+              role="tab"
+              aria-selected="false"
+            >
+              Result
+            </button>
+          </div>
+
+          <div class="pg-panel is-active" data-pg-panel="code">
+            <pre
+              class="pg-code"
+            ><span class="tok-key">const</span> ai = <span class="tok-key">new</span> <span class="tok-fn">AI</span>({
+  apiKeys: [<span class="tok-str">"••••••••••••"</span>],
+  persona: <span class="tok-str">`You are Anna. Sarcastic, intelligent, concise.`</span>
+});
+
+ai.<span class="tok-fn">useSpeechRecognition</span>();
+
+<span class="tok-key">const</span> response = <span class="tok-key">await</span> ai.<span class="tok-fn">handleMessage</span>({
+  userId: <span class="tok-str">"user_12345"</span>,
+  voice: <span class="pg-field-wrap"></span></pre>
+            <label class="pg-upload">
+              <input
+                type="file"
+                accept="audio/mpeg,audio/wav,audio/x-m4a,audio/mp4"
+                class="pg-file-input"
+                data-pg-accept-label=".mp3, .wav, .m4a  up to 3MB"
+                data-pg-maxbytes="3145728"
+              />
+              <span class="pg-upload-text"
+                >Choose an audio file. .mp3, .wav, .m4a, up to 3MB.</span
+              >
+            </label>
+            <div class="pg-file-name" aria-live="polite"></div>
+            <pre class="pg-code" style="margin-top: -6px">});</pre>
+            <div class="pg-error" aria-live="polite"></div>
+            <div class="pg-run-row">
+              <button class="pg-run" disabled>Run</button>
+              <div class="pg-log" aria-live="polite"></div>
+            </div>
+          </div>
+
+          <div class="pg-panel" data-pg-panel="metadata">
+            <pre class="pg-code pg-output" data-pg-output="metadata">
+Run the request to see response metadata here.</pre
+            >
+          </div>
+
+          <div class="pg-panel" data-pg-panel="result">
+            <pre class="pg-code pg-output" data-pg-output="result">
+Run the request to see the result here.</pre
+            >
+          </div>
+        </div>
+
+        <h3 id="pg-gethistory" style="scroll-margin-top: 78px">getHistory()</h3>
+        <p>Retrieves recorded conversation history for a session.</p>
+
+        <div class="pg-widget" data-pg="getHistory">
+          <div class="pg-tabs" role="tablist">
+            <button
+              class="pg-tab is-active"
+              data-pg-tab="code"
+              role="tab"
+              aria-selected="true"
+            >
+              Code
+            </button>
+            <button
+              class="pg-tab"
+              data-pg-tab="metadata"
+              role="tab"
+              aria-selected="false"
+            >
+              Response Metadata
+            </button>
+            <button
+              class="pg-tab"
+              data-pg-tab="result"
+              role="tab"
+              aria-selected="false"
+            >
+              Result
+            </button>
+          </div>
+
+          <div class="pg-panel is-active" data-pg-panel="code">
+            <pre
+              class="pg-code"
+            ><span class="tok-key">const</span> history = <span class="tok-key">await</span> ai.<span class="tok-fn">getHistory</span>(
+  <span class="tok-str">"user_12345"</span>,
+  {
+    limit: <span class="pg-field-wrap"><input type="number" class="pg-field pg-field-number" data-pg-field="limit" min="1" step="1" placeholder="optional"></span>
+  }
+);</pre>
+            <div class="pg-error" aria-live="polite"></div>
+            <div class="pg-run-row">
+              <button class="pg-run">Run</button>
+              <div class="pg-log" aria-live="polite"></div>
+            </div>
+          </div>
+
+          <div class="pg-panel" data-pg-panel="metadata">
+            <pre class="pg-code pg-output" data-pg-output="metadata">
+Run the request to see response metadata here.</pre
+            >
+          </div>
+
+          <div class="pg-panel" data-pg-panel="result">
+            <pre class="pg-code pg-output" data-pg-output="result">
+Run the request to see the result here.</pre
+            >
+          </div>
+        </div>
+
+        <h3 id="pg-deletehistory" style="scroll-margin-top: 78px">
+          deleteHistory()
+        </h3>
+        <p>Purges stored message history for a session.</p>
+
+        <div class="pg-widget" data-pg="deleteHistory">
+          <div class="pg-tabs" role="tablist">
+            <button
+              class="pg-tab is-active"
+              data-pg-tab="code"
+              role="tab"
+              aria-selected="true"
+            >
+              Code
+            </button>
+            <button
+              class="pg-tab"
+              data-pg-tab="metadata"
+              role="tab"
+              aria-selected="false"
+            >
+              Response Metadata
+            </button>
+            <button
+              class="pg-tab"
+              data-pg-tab="result"
+              role="tab"
+              aria-selected="false"
+            >
+              Result
+            </button>
+          </div>
+
+          <div class="pg-panel is-active" data-pg-panel="code">
+            <pre
+              class="pg-code"
+            ><span class="tok-key">await</span> ai.<span class="tok-fn">deleteHistory</span>(
+  <span class="tok-str">"user_12345"</span>,
+  {
+    limit: <span class="pg-field-wrap"><input type="number" class="pg-field pg-field-number" data-pg-field="limit" min="1" step="1" placeholder="optional"></span>
+  }
+);</pre>
+            <div class="pg-error" aria-live="polite"></div>
+            <div class="pg-run-row">
+              <button class="pg-run">Run</button>
+              <div class="pg-log" aria-live="polite"></div>
+            </div>
+          </div>
+
+          <div class="pg-panel" data-pg-panel="metadata">
+            <pre class="pg-code pg-output" data-pg-output="metadata">
+Run the request to see response metadata here.</pre
+            >
+          </div>
+
+          <div class="pg-panel" data-pg-panel="result">
+            <pre class="pg-code pg-output" data-pg-output="result">
+Run the request to see the result here.</pre
+            >
+          </div>
+        </div>
+      </section>
+
+      <footer class="site-footer">
+        <div class="site-footer-rule"></div>
+        <p class="site-footer-title">PersonaFlow. MIT License.</p>
+        <p class="site-footer-links">
+          <a href="#" onclick="return false;">GitHub</a>
+          <span class="site-footer-dot">•</span>
+          <a href="#quickstart">npm</a>
+          <span class="site-footer-dot">•</span>
+          <a href="#overview">Documentation</a>
+        </p>
+        <p class="site-footer-tag">Built with focus on system resilience.</p>
+      </footer>
+    </main>
+
+    <script>
+      // Ambient generative field for the hero: soft drifting nodes that
+      // occasionally connect, suggesting "conversation forming from noise."
+      // Respects prefers-reduced-motion by rendering a single static frame.
+      (function () {
+        const canvas = document.getElementById("field");
+        const ctx = canvas.getContext("2d");
+        let w, h, dpr;
+        let particles = [];
+        const reduceMotion = window.matchMedia(
+          "(prefers-reduced-motion: reduce)",
+        ).matches;
+
+        function resize() {
+          dpr = Math.min(window.devicePixelRatio || 1, 2);
+          w = canvas.parentElement.clientWidth;
+          h = canvas.parentElement.clientHeight;
+          canvas.width = w * dpr;
+          canvas.height = h * dpr;
+          canvas.style.width = w + "px";
+          canvas.style.height = h + "px";
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+
+        function initParticles() {
+          const count = Math.max(28, Math.floor((w * h) / 32000));
+          particles = Array.from({ length: count }, () => ({
+            x: Math.random() * w,
+            y: Math.random() * h,
+            vx: (Math.random() - 0.5) * 0.12,
+            vy: (Math.random() - 0.5) * 0.12,
+            r: Math.random() * 1.4 + 0.6,
+          }));
+        }
+
+        function step() {
+          ctx.clearRect(0, 0, w, h);
+
+          const cx = w * 0.72,
+            cy = h * 0.6;
+
+          for (const p of particles) {
+            if (!reduceMotion) {
+              p.x += p.vx;
+              p.y += p.vy;
+              if (p.x < 0 || p.x > w) p.vx *= -1;
+              if (p.y < 0 || p.y > h) p.vy *= -1;
+            }
+          }
+
+          ctx.lineWidth = 0.6;
+          for (let i = 0; i < particles.length; i++) {
+            for (let j = i + 1; j < particles.length; j++) {
+              const a = particles[i],
+                b = particles[j];
+              const dx = a.x - b.x,
+                dy = a.y - b.y;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+              if (dist < 130) {
+                const distToCenter = Math.sqrt(
+                  (a.x - cx) ** 2 + (a.y - cy) ** 2,
+                );
+                const proximity = Math.max(0, 1 - distToCenter / (w * 0.7));
+                const alpha = (1 - dist / 130) * 0.18 * (0.4 + proximity);
+                ctx.strokeStyle = `rgba(232,168,104,${alpha})`;
+                ctx.beginPath();
+                ctx.moveTo(a.x, a.y);
+                ctx.lineTo(b.x, b.y);
+                ctx.stroke();
+              }
+            }
+          }
+
+          for (const p of particles) {
+            const distToCenter = Math.sqrt((p.x - cx) ** 2 + (p.y - cy) ** 2);
+            const proximity = Math.max(0, 1 - distToCenter / (w * 0.7));
+            ctx.fillStyle = `rgba(243,238,230,${0.15 + proximity * 0.35})`;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          if (!reduceMotion) requestAnimationFrame(step);
+        }
+
+        resize();
+        initParticles();
+        step();
+
+        window.addEventListener("resize", () => {
+          resize();
+          initParticles();
+          if (reduceMotion) step();
+        });
+      })();
+    </script>
+
+    <script>
+      // Topbar reveal: hidden while the hero is in view, fades in once scrolled past.
+      (function () {
+        const topbar = document.getElementById("topbar");
+        const hero = document.querySelector(".hero");
+        const io = new IntersectionObserver(
+          ([entry]) => {
+            topbar.classList.toggle("is-visible", !entry.isIntersecting);
+          },
+          { rootMargin: "-58px 0px 0px 0px", threshold: 0 },
+        );
+        io.observe(hero);
+      })();
+
+      // Scroll-triggered eases: Overview, Quickstart, Features & Methods,
+      // Design Principles, and Non-Goals all use the same trigger rule
+      // (threshold: 0  fires as soon as any edge crosses into or out of the
+      // viewport) so every section's animation starts at the same visual
+      // moment, regardless of how tall the section itself is.
+
+      // Overview, Quickstart, Features & Methods: ease in on entry, ease back
+      // out when scrolled past in either direction.
+      (function () {
+        const sections = [
+          "overview",
+          "quickstart",
+          "features",
+          "architecture",
+          "flow",
+          "storage",
+        ]
+          .map((id) => document.getElementById(id))
+          .filter(Boolean);
+        if (!sections.length) return;
+        const io = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              entry.target.classList.toggle("is-in-view", entry.isIntersecting);
+            });
+          },
+          { threshold: 0 },
+        );
+        sections.forEach((s) => io.observe(s));
+      })();
+
+      // Design Principles: eases in once on arrival and stays visible  no
+      // re-hide when scrolled past.
+      (function () {
+        const el = document.getElementById("principles");
+        if (!el) return;
+        const io = new IntersectionObserver(
+          ([entry]) => {
+            if (entry.isIntersecting) {
+              el.classList.add("is-in-view");
+              io.disconnect();
+            }
+          },
+          { threshold: 0 },
+        );
+        io.observe(el);
+      })();
+
+      // Non-Goals: starts visible, eases out as it leaves the viewport upward
+      // (the user has scrolled past it)  no entrance animation on the way in,
+      // and it reappears if the user scrolls back up to it.
+      (function () {
+        const el = document.getElementById("nongoals");
+        if (!el) return;
+        const io = new IntersectionObserver(
+          ([entry]) => {
+            el.classList.toggle(
+              "is-past",
+              !entry.isIntersecting && entry.boundingClientRect.top < 0,
+            );
+          },
+          { threshold: 0 },
+        );
+        io.observe(el);
+      })();
+
+      // Sidebar: opens on hamburger click OR hover/focus, closes on scrim click,
+      // outside click, Escape, or picking a link. Never persistent.
+      (function () {
+        const sidebar = document.getElementById("sidebar");
+        const scrim = document.getElementById("sidebarScrim");
+        const toggle = document.getElementById("menuToggle");
+        let hoverCloseTimer = null;
+
+        function openSidebar() {
+          clearTimeout(hoverCloseTimer);
+          sidebar.classList.add("is-open");
+          scrim.classList.add("is-visible");
+          toggle.setAttribute("aria-expanded", "true");
+        }
+
+        function closeSidebar() {
+          sidebar.classList.remove("is-open");
+          scrim.classList.remove("is-visible");
+          toggle.setAttribute("aria-expanded", "false");
+        }
+
+        function scheduleClose() {
+          clearTimeout(hoverCloseTimer);
+          hoverCloseTimer = setTimeout(closeSidebar, 220);
+        }
+
+        toggle.addEventListener("click", () => {
+          // Click always opens (and keeps it open) rather than toggling  hover
+          // may have already opened it, and a toggle there would immediately
+          // close it again on the same interaction.
+          openSidebar();
+        });
+        toggle.addEventListener("mouseenter", openSidebar);
+        toggle.addEventListener("focus", openSidebar);
+        toggle.addEventListener("mouseleave", scheduleClose);
+
+        sidebar.addEventListener("mouseenter", () =>
+          clearTimeout(hoverCloseTimer),
+        );
+        sidebar.addEventListener("mouseleave", scheduleClose);
+
+        scrim.addEventListener("click", closeSidebar);
+
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape") closeSidebar();
+        });
+
+        sidebar
+          .querySelectorAll("a")
+          .forEach((a) => a.addEventListener("click", closeSidebar));
+      })();
+
+      // Active section highlighting in the sidebar. Uses each target's
+      // position relative to a line near the top of the viewport, rather than
+      // raw intersection  needed because #features wraps #optional, so both
+      // are "intersecting" simultaneously for most of the scroll range.
+      (function () {
+        const navItems = document.querySelectorAll(".nav-item");
+        const targets = Array.from(navItems)
+          .map((n) => ({
+            item: n,
+            el: document.getElementById(n.dataset.target),
+          }))
+          .filter((t) => t.el);
+
+        function updateActive() {
+          const line = window.innerHeight * 0.25;
+          const atBottom =
+            window.scrollY + window.innerHeight >=
+            document.documentElement.scrollHeight - 2;
+          let current = null;
+          for (const t of targets) {
+            const rect = t.el.getBoundingClientRect();
+            // Normally a target activates once its top has passed the trigger
+            // line. If the page is scrolled to its max (the last section is too
+            // short, or too close to the document end, to ever push its top
+            // past the line), fall back to "is this target visible at all" so
+            // the final section can still activate.
+            const passedLine = rect.top <= line;
+            const visibleAtBottom =
+              atBottom && rect.top < window.innerHeight && rect.bottom > 0;
+            if (passedLine || visibleAtBottom) {
+              if (!current || rect.top > current.rect.top)
+                current = { ...t, rect };
+            }
+          }
+          navItems.forEach((n) => n.classList.remove("active"));
+          if (current) current.item.classList.add("active");
+        }
+
+        let ticking = false;
+        window.addEventListener(
+          "scroll",
+          () => {
+            if (!ticking) {
+              requestAnimationFrame(() => {
+                updateActive();
+                ticking = false;
+              });
+              ticking = true;
+            }
+          },
+          { passive: true },
+        );
+        updateActive();
+      })();
+
+      // System Map diagram: draws fan-out connectors from Orchestrator to the
+      // three service nodes, and fan-in connectors from those three nodes down
+      // into Response. Positions are measured from actual rendered layout
+      // (not hardcoded) so it stays correct across viewport widths.
+      (function () {
+        const inner = document.getElementById("archDiagramInner");
+        const svg = document.getElementById("archSvg");
+        if (!inner || !svg) return;
+
+        function centerOf(el, containerRect) {
+          const r = el.getBoundingClientRect();
+          return {
+            x: r.left + r.width / 2 - containerRect.left,
+            y: r.top + r.height / 2 - containerRect.top,
+            top: r.top - containerRect.top,
+            bottom: r.bottom - containerRect.top,
+          };
+        }
+
+        function draw() {
+          const containerRect = inner.getBoundingClientRect();
+          svg.setAttribute("width", containerRect.width);
+          svg.setAttribute("height", containerRect.height);
+          svg.setAttribute(
+            "viewBox",
+            `0 0 ${containerRect.width} ${containerRect.height}`,
+          );
+
+          const ai = document.querySelector('[data-arch-id="ai"]');
+          const orchestrator = document.querySelector(
+            '[data-arch-id="orchestrator"]',
+          );
+          const memory = document.querySelector('[data-arch-id="memory"]');
+          const gemini = document.querySelector('[data-arch-id="gemini"]');
+          const features = document.querySelector('[data-arch-id="features"]');
+          const response = document.querySelector('[data-arch-id="response"]');
+          if (
+            !ai ||
+            !orchestrator ||
+            !memory ||
+            !gemini ||
+            !features ||
+            !response
+          )
+            return;
+
+          const aiC = centerOf(ai, containerRect);
+          const orchC = centerOf(orchestrator, containerRect);
+          const branchNodes = [memory, gemini, features].map((el) =>
+            centerOf(el, containerRect),
+          );
+          const respC = centerOf(response, containerRect);
+
+          const paths = [];
+
+          // AI -> Orchestrator (straight vertical)
+          paths.push(`M ${aiC.x} ${aiC.bottom} L ${orchC.x} ${orchC.top}`);
+
+          // Orchestrator -> each branch node (fan out, smooth curve)
+          branchNodes.forEach((b) => {
+            const midY = (orchC.bottom + b.top) / 2;
+            paths.push(
+              `M ${orchC.x} ${orchC.bottom} C ${orchC.x} ${midY}, ${b.x} ${midY}, ${b.x} ${b.top}`,
+            );
+          });
+
+          // each branch node -> Response (fan in, smooth curve)
+          branchNodes.forEach((b) => {
+            const midY = (b.bottom + respC.top) / 2;
+            paths.push(
+              `M ${b.x} ${b.bottom} C ${b.x} ${midY}, ${respC.x} ${midY}, ${respC.x} ${respC.top}`,
+            );
+          });
+
+          svg.innerHTML = paths.map((d) => `<path d="${d}"></path>`).join("");
+        }
+
+        // Redraw on load, on resize, and once the section finishes easing in
+        // (layout may shift slightly during the transform transition).
+        window.addEventListener("resize", draw);
+        window.addEventListener("load", draw);
+        setTimeout(draw, 50);
+
+        const section = document.getElementById("architecture");
+        if (section) {
+          const io = new IntersectionObserver(
+            ([entry]) => {
+              if (entry.isIntersecting) setTimeout(draw, 550);
+            },
+            { threshold: 0 },
+          );
+          io.observe(section);
+        }
+      })();
+
+      // Playground: tab switching + a real Run flow that calls the
+      // PersonaFlow server (see server.js / API_CONTRACT.md). Each widget's
+      // data-pg attribute ("handleMessage", "useVision", "useSpeechRecognition",
+      // "getHistory", "deleteHistory") selects which endpoint + payload shape
+      // to use. The userId shown in the code samples ("user_12345") is fixed
+      // to match what's printed in the widget markup.
+      (function () {
+        const PG_BASE_URL =
+          window.PERSONACORE_PLAYGROUND_URL || "http://localhost:3000";
+        const PG_USER_ID = "user_12345";
+
+        const baseUrlLabel = document.getElementById("pgBaseUrlLabel");
+        if (baseUrlLabel) baseUrlLabel.textContent = PG_BASE_URL;
+
+        document.querySelectorAll(".pg-widget").forEach(setupPlayground);
+
+        function setupPlayground(widget) {
+          const tabs = widget.querySelectorAll(".pg-tab");
+          const panels = widget.querySelectorAll(".pg-panel");
+
+          tabs.forEach((tab) => {
+            tab.addEventListener("click", () => {
+              tabs.forEach((t) => {
+                t.classList.remove("is-active");
+                t.setAttribute("aria-selected", "false");
+              });
+              panels.forEach((p) => p.classList.remove("is-active"));
+              tab.classList.add("is-active");
+              tab.setAttribute("aria-selected", "true");
+              widget
+                .querySelector(`[data-pg-panel="${tab.dataset.pgTab}"]`)
+                .classList.add("is-active");
+            });
+          });
+
+          const runBtn = widget.querySelector(".pg-run");
+          const textField = widget.querySelector('[data-pg-field="text"]');
+          const fileInput = widget.querySelector(".pg-file-input");
+          const limitField = widget.querySelector('[data-pg-field="limit"]');
+          const errorEl = widget.querySelector(".pg-error");
+          const logEl = widget.querySelector(".pg-log");
+
+          if (fileInput) {
+            const fileNameEl = widget.querySelector(".pg-file-name");
+            const maxBytes = parseInt(fileInput.dataset.pgMaxbytes, 10);
+            const acceptLabel = fileInput.dataset.pgAcceptLabel;
+
+            fileInput.addEventListener("change", () => {
+              errorEl.textContent = "";
+              fileNameEl.textContent = "";
+              runBtn.disabled = true;
+
+              const file = fileInput.files[0];
+              if (!file) return;
+
+              if (file.size > maxBytes) {
+                errorEl.textContent = `File is too large. Max size is ${acceptLabel}.`;
+                fileInput.value = "";
+                return;
+              }
+
+              fileNameEl.textContent = file.name;
+              runBtn.disabled = false;
+            });
+          }
+
+          if (limitField) {
+            limitField.addEventListener("input", () => {
+              errorEl.textContent = "";
+            });
+          }
+
+          if (runBtn) {
+            runBtn.addEventListener("click", () =>
+              runPlayground(
+                widget,
+                runBtn,
+                textField,
+                fileInput,
+                limitField,
+                errorEl,
+                logEl,
+              ),
+            );
+          }
+        }
+
+        async function runPlayground(
+          widget,
+          runBtn,
+          textField,
+          fileInput,
+          limitField,
+          errorEl,
+          logEl,
+        ) {
+          errorEl.textContent = "";
+
+          if (textField && textField.value.trim().length === 0) {
+            errorEl.textContent = "Enter a message before running.";
+            return;
+          }
+
+          if (fileInput && (!fileInput.files || fileInput.files.length === 0)) {
+            errorEl.textContent = "Choose a file before running.";
+            return;
+          }
+
+          let limitValue;
+          if (limitField && limitField.value.trim().length > 0) {
+            const n = Number(limitField.value);
+            if (!Number.isInteger(n) || n < 1) {
+              errorEl.textContent =
+                "limit must be a positive whole number, or left blank.";
+              return;
+            }
+            limitValue = n;
+          }
+
+          runBtn.disabled = true;
+          logEl.innerHTML = "";
+
+          const stages = [
+            "Connecting...",
+            "Sending request...",
+            "Waiting for response...",
+          ];
+          const lines = stages.map((label) => {
+            const el = document.createElement("div");
+            el.className = "pg-log-line";
+            el.textContent = label;
+            logEl.appendChild(el);
+            return el;
+          });
+          lines[0].classList.add("is-active");
+
+          function advanceLog(i) {
+            lines.forEach((l) => l.classList.remove("is-active"));
+            if (lines[i - 1]) lines[i - 1].classList.add("is-done");
+            if (lines[i]) lines[i].classList.add("is-active");
+          }
+
+          const metadataOut = widget.querySelector(
+            '[data-pg-output="metadata"]',
+          );
+          const resultOut = widget.querySelector('[data-pg-output="result"]');
+          const pgKind = widget.dataset.pg;
+
+          try {
+            advanceLog(1);
+            const { response, body } = await dispatchRequest(pgKind, {
+              textField,
+              fileInput,
+              limitValue,
+            });
+            advanceLog(2);
+            lines.forEach((l) => {
+              l.classList.remove("is-active");
+              l.classList.add("is-done");
+            });
+
+            renderOutput(pgKind, response, body, metadataOut, resultOut);
+
+            if (!response.ok && response.status !== 200) {
+              errorEl.textContent =
+                (body && body.error && body.error.message) ||
+                `Request failed (HTTP ${response.status}).`;
+            }
+          } catch (err) {
+            lines.forEach((l) => l.classList.remove("is-active"));
+            errorEl.textContent = `Could not reach the PersonaFlow server at ${PG_BASE_URL}. Is it running? (${err.message})`;
+            if (metadataOut)
+              metadataOut.textContent =
+                "Request failed before a response was received.";
+            if (resultOut)
+              resultOut.textContent =
+                "Request failed before a response was received.";
+          } finally {
+            runBtn.disabled = false;
+          }
+        }
+
+        async function dispatchRequest(
+          pgKind,
+          { textField, fileInput, limitValue },
+        ) {
+          let url, init;
+
+          if (
+            pgKind === "handleMessage" ||
+            pgKind === "useVision" ||
+            pgKind === "useSpeechRecognition"
+          ) {
+            const form = new FormData();
+            form.append("userId", PG_USER_ID);
+            if (textField) form.append("text", textField.value);
+            if (pgKind === "useVision" && fileInput && fileInput.files[0]) {
+              form.append("image", fileInput.files[0]);
+            }
+            if (
+              pgKind === "useSpeechRecognition" &&
+              fileInput &&
+              fileInput.files[0]
+            ) {
+              form.append("voice", fileInput.files[0]);
+            }
+            url = `${PG_BASE_URL}/api/message`;
+            init = { method: "POST", body: form };
+          } else if (pgKind === "getHistory") {
+            const qs = limitValue ? `?limit=${limitValue}` : "";
+            url = `${PG_BASE_URL}/api/history/${encodeURIComponent(PG_USER_ID)}${qs}`;
+            init = { method: "GET" };
+          } else if (pgKind === "deleteHistory") {
+            const qs = limitValue ? `?limit=${limitValue}` : "";
+            url = `${PG_BASE_URL}/api/history/${encodeURIComponent(PG_USER_ID)}${qs}`;
+            init = { method: "DELETE" };
+          } else {
+            throw new Error(`Unknown playground widget type: ${pgKind}`);
+          }
+
+          const response = await fetch(url, init);
+          let body = null;
+          try {
+            body = await response.json();
+          } catch (_) {
+            /* non-JSON error body */
+          }
+          return { response, body };
+        }
+
+        function renderOutput(pgKind, response, body, metadataOut, resultOut) {
+          if (!body) {
+            if (metadataOut)
+              metadataOut.textContent = `HTTP ${response.status}  no JSON body returned.`;
+            if (resultOut)
+              resultOut.textContent = `HTTP ${response.status}  no JSON body returned.`;
+            return;
+          }
+
+          if (metadataOut) {
+            const meta =
+              body.metadata !== undefined
+                ? body.metadata
+                : body.error
+                  ? { error: body.error }
+                  : {};
+            metadataOut.textContent = JSON.stringify(meta, null, 2);
+          }
+
+          if (!resultOut) return;
+
+          if (pgKind === "getHistory") {
+            resultOut.textContent = body.success
+              ? JSON.stringify(body.history, null, 2)
+              : JSON.stringify(body, null, 2);
+            return;
+          }
+
+          if (pgKind === "deleteHistory") {
+            resultOut.textContent = JSON.stringify(body, null, 2);
+            return;
+          }
+
+          // handleMessage / useVision / useSpeechRecognition
+          if (!body.success) {
+            resultOut.textContent = JSON.stringify(body, null, 2);
+            return;
+          }
+
+          const resultView = { text: body.text };
+          if (body.audio) {
+            resultView.audio = `<${body.audioMimeType || "audio"}, ~${Math.round(body.audio.length * 0.75)} bytes, base64 in response>`;
+          }
+          resultOut.textContent = JSON.stringify(resultView, null, 2);
+        }
+      })();
+
+      // Copy-to-clipboard for code blocks
+      document.querySelectorAll(".copy-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const text = btn.getAttribute("data-copy");
+          navigator.clipboard.writeText(text).then(() => {
+            const original = btn.textContent;
+            btn.textContent = "Copied ✓";
+            btn.classList.add("copied");
+            setTimeout(() => {
+              btn.textContent = original;
+              btn.classList.remove("copied");
+            }, 1500);
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

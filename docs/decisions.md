@@ -1,16 +1,16 @@
 # Architecture Decision Record (ADR)
 
-This document records significant design decisions made in PersonaCore, along with the reasoning behind them. Each entry captures the decision, the context that motivated it, and the trade-offs accepted.
+This document records significant design decisions made in PersonaFlow, along with the reasoning behind them. Each entry captures the decision, the context that motivated it, and the trade-offs accepted.
 
 ---
 
 ## ADR-001: Gemini-only, no multi-provider abstraction
 
-**Decision:** PersonaCore is built directly on `@google/genai` with no provider-abstraction layer. There is no adapter interface for swapping in OpenAI, Anthropic, or other model providers.
+**Decision:** PersonaFlow is built directly on `@google/genai` with no provider-abstraction layer. There is no adapter interface for swapping in OpenAI, Anthropic, or other model providers.
 
 **Context:** Multi-provider abstractions are a common SDK pattern, but they typically force the abstraction down to the lowest common denominator of capability across providers losing access to provider-specific features (e.g. Gemini's native TTS modality, its specific content-part structure for multimodal input) or requiring leaky, provider-specific escape hatches that undermine the abstraction anyway.
 
-**Reasoning:** PersonaCore's value proposition is depth on a persona-driven conversational experience, not breadth of provider support. Gemini's multimodal content model (text, image, and audio as parts within a unified `contents` structure) maps cleanly onto PersonaCore's own request model (`text`, `image`, `voice` on a single `handleMessage()` call). Committing to one provider lets the SDK use that provider's capabilities directly and predictably, rather than designing around a hypothetical second provider that may need different content shapes, different auth models, or different failure semantics.
+**Reasoning:** PersonaFlow's value proposition is depth on a persona-driven conversational experience, not breadth of provider support. Gemini's multimodal content model (text, image, and audio as parts within a unified `contents` structure) maps cleanly onto PersonaFlow's own request model (`text`, `image`, `voice` on a single `handleMessage()` call). Committing to one provider lets the SDK use that provider's capabilities directly and predictably, rather than designing around a hypothetical second provider that may need different content shapes, different auth models, or different failure semantics.
 
 **Consequences:** Switching model providers would require a new major version or a different package, not a configuration change. This is accepted as the right trade-off for the SDK's scope (see `overview.md`, Non-Goals).
 
@@ -24,7 +24,7 @@ This document records significant design decisions made in PersonaCore, along wi
 
 **Reasoning:** A single nested config object makes the constructor's required-vs-optional surface harder to read at a glance and pushes all validation into one large upfront block, which conflicts with the principle that invalid configuration should fail fast and clearly (NFR-7). Explicit `.use...()` calls read as a clear, sequential, opt-in list at the call site a developer scanning setup code sees exactly which capabilities are active without parsing a nested object. It also keeps the constructor itself minimal and fast, matching the goal of the base instance being immediately usable (FR-4) with no optional-feature overhead paid unless requested.
 
-A plugin-registration system was rejected as unnecessary generality: PersonaCore has a small, fixed set of optional capabilities, not an open-ended extension point that third parties need to add to.
+A plugin-registration system was rejected as unnecessary generality: PersonaFlow has a small, fixed set of optional capabilities, not an open-ended extension point that third parties need to add to.
 
 **Consequences:** Adding a new optional capability in the future means adding a new `.use...()` method and a new internal `_field`, following the existing pattern a small, consistent cost per feature, judged preferable to the flexibility (and complexity) of a generic plugin system.
 
@@ -34,7 +34,7 @@ A plugin-registration system was rejected as unnecessary generality: PersonaCore
 
 **Decision:** `AI` always constructs an `ArrayStore` at initialization. `useMemory()` swaps the active backend to `MongoStore`; without calling it, history never touches a database.
 
-**Context:** Conversation history is required for PersonaCore's multi-turn behavior to work at all (FR-15), so _some_ backend has to be active from the moment an instance is constructed history can't be optional the way vision or voice are.
+**Context:** Conversation history is required for PersonaFlow's multi-turn behavior to work at all (FR-15), so _some_ backend has to be active from the moment an instance is constructed history can't be optional the way vision or voice are.
 
 **Reasoning:** Requiring a database connection just to send a single conversational message would violate the goal of minimal required configuration (NFR-8) and the "fast to adopt" goal in `overview.md`. An in-memory default lets a developer go from `npm install` to a working conversation with zero infrastructure. Because `MemoryService` depends on a storage interface rather than a concrete backend (see `architecture.md`, Storage Design), swapping to `MongoStore` later is a one-line change with no impact on the rest of the SDK.
 
@@ -46,7 +46,7 @@ A plugin-registration system was rejected as unnecessary generality: PersonaCore
 
 **Decision:** `MongoStore` generates a collection name scoped to the owning `AI` instance, so two `AI` instances calling `useMemory()` with the same connection URI never share or collide on history.
 
-**Context:** A naive implementation might use a single shared collection name (e.g. `personacore_history`) across all instances, relying on `userId` alone to separate conversations.
+**Context:** A naive implementation might use a single shared collection name (e.g. `personaflow_history`) across all instances, relying on `userId` alone to separate conversations.
 
 **Reasoning:** A host application may run multiple `AI` instances with different personas against the same MongoDB deployment (e.g. multiple characters in one app, or per-tenant instances). If those instances shared a collection and, by coincidence or bug, the same `userId` value, their histories would interleave a persona would see conversation turns that belonged to a different persona entirely. Scoping storage per instance closes this off structurally rather than relying on callers to guarantee globally unique `userId`s across every `AI` instance they create.
 
@@ -68,7 +68,7 @@ A plugin-registration system was rejected as unnecessary generality: PersonaCore
 
 ## ADR-006: Automatic API key failover with temporary blacklisting
 
-**Decision:** PersonaCore accepts an array of API keys and automatically retries a failed request against the next eligible key when the failure is a rotatable status (429, 401, 403, 5xx, or network-level). A key that fails is blacklisted for a fixed duration (2 hours) rather than permanently or for the process lifetime.
+**Decision:** PersonaFlow accepts an array of API keys and automatically retries a failed request against the next eligible key when the failure is a rotatable status (429, 401, 403, 5xx, or network-level). A key that fails is blacklisted for a fixed duration (2 hours) rather than permanently or for the process lifetime.
 
 **Context:** Alternatives considered included: no built-in failover (leave retry logic to the host application), permanent blacklisting of a failed key for the process lifetime, or exposing a manual "reset key" method.
 
@@ -84,9 +84,9 @@ Non-rotatable errors (400, 404) are deliberately _not_ retried against other key
 
 **Decision:** Every system instruction sent to Gemini is `CONVERSATIONAL_BEHAVIOR` (a fixed internal text block) concatenated with the developer-supplied `persona`. The behavior layer itself is not exposed for configuration or override.
 
-**Context:** An alternative would let developers supply the entire system instruction themselves, with PersonaCore only handling request plumbing.
+**Context:** An alternative would let developers supply the entire system instruction themselves, with PersonaFlow only handling request plumbing.
 
-**Reasoning:** PersonaCore's core value proposition, per `overview.md`, is that persona input should produce natural, human-sounding conversation rather than assistant-flavored responses regardless of how the persona itself is worded. Leaving conversational style entirely to whatever the developer writes into `persona` would make that outcome unreliable: a persona description alone doesn't typically specify response length norms, when to ask questions, formatting behavior, or how to handle emotional tone, and developers would have to rediscover and re-solve the same prompt-engineering problems independently. A fixed internal layer, always combined with the persona, guarantees a consistent baseline of conversational quality across every PersonaCore integration.
+**Reasoning:** PersonaFlow's core value proposition, per `overview.md`, is that persona input should produce natural, human-sounding conversation rather than assistant-flavored responses regardless of how the persona itself is worded. Leaving conversational style entirely to whatever the developer writes into `persona` would make that outcome unreliable: a persona description alone doesn't typically specify response length norms, when to ask questions, formatting behavior, or how to handle emotional tone, and developers would have to rediscover and re-solve the same prompt-engineering problems independently. A fixed internal layer, always combined with the persona, guarantees a consistent baseline of conversational quality across every PersonaFlow integration.
 
 **Consequences:** Developers cannot override or disable the internal behavior layer's conversational norms (e.g. avoiding follow-up questions by default, avoiding markdown formatting by default) only the persona portion is theirs to control. This is an intentional constraint in service of consistent output quality, not an oversight.
 
@@ -110,7 +110,7 @@ Non-rotatable errors (400, 404) are deliberately _not_ retried against other key
 
 **Context:** An alternative would add a per-call flag (e.g. `handleMessage({ ..., wantsVoice: true })`) letting the caller decide per-message whether audio should be generated.
 
-**Reasoning:** PersonaCore's voice output is designed to emulate how a person might naturally mix voice notes and text in conversation sometimes responding with a voice message, sometimes with text, without the other party explicitly requesting one or the other each time. A probability-based model captures that naturally varied behavior directly in configuration set once via `useVoiceOutput()`, rather than requiring the host application to implement its own randomization or selection logic on top of a per-call flag.
+**Reasoning:** PersonaFlow's voice output is designed to emulate how a person might naturally mix voice notes and text in conversation sometimes responding with a voice message, sometimes with text, without the other party explicitly requesting one or the other each time. A probability-based model captures that naturally varied behavior directly in configuration set once via `useVoiceOutput()`, rather than requiring the host application to implement its own randomization or selection logic on top of a per-call flag.
 
 **Consequences:** The caller cannot deterministically force audio generation on a specific call through the public API. This trade-off is accepted because forcing determinism was not a design goal the natural, human-like variability was the intended behavior.
 
@@ -118,11 +118,11 @@ Non-rotatable errors (400, 404) are deliberately _not_ retried against other key
 
 ## ADR-010: Platform independence no runtime framework dependency
 
-**Decision:** PersonaCore has no dependency on any HTTP framework, WebSocket library, or hosting platform. Its only structural runtime requirement is Node.js ≥18. Audio transcoding uses a statically bundled `ffmpeg-static` binary rather than assuming ffmpeg is present on the host.
+**Decision:** PersonaFlow has no dependency on any HTTP framework, WebSocket library, or hosting platform. Its only structural runtime requirement is Node.js ≥18. Audio transcoding uses a statically bundled `ffmpeg-static` binary rather than assuming ffmpeg is present on the host.
 
 **Context:** Given that many chat-oriented SDKs are built with an assumed transport layer (e.g. shipped as Express middleware, or coupled to a specific serverless platform's request/response types).
 
-**Reasoning:** Per `overview.md`'s non-goals, PersonaCore is explicitly not a chat platform it's a message-in, response-out library meant to be embedded inside a host application that owns its own transport layer, whatever that is (REST, WebSocket, a queue consumer, a CLI tool). Coupling to any specific framework would narrow where PersonaCore could be used without technical justification, since nothing about persona-driven conversation generation actually requires a particular transport. Bundling `ffmpeg-static` rather than shelling out to a system `ffmpeg` binary removes an entire class of "works on my machine" environment-setup failures for a feature (voice output) that would otherwise silently fail on any host without ffmpeg preinstalled.
+**Reasoning:** Per `overview.md`'s non-goals, PersonaFlow is explicitly not a chat platform it's a message-in, response-out library meant to be embedded inside a host application that owns its own transport layer, whatever that is (REST, WebSocket, a queue consumer, a CLI tool). Coupling to any specific framework would narrow where PersonaFlow could be used without technical justification, since nothing about persona-driven conversation generation actually requires a particular transport. Bundling `ffmpeg-static` rather than shelling out to a system `ffmpeg` binary removes an entire class of "works on my machine" environment-setup failures for a feature (voice output) that would otherwise silently fail on any host without ffmpeg preinstalled.
 
 **Consequences:** `ffmpeg-static` adds to install size even for integrations that never enable voice output, since it's a direct dependency rather than an optional peer dependency. This was judged an acceptable trade-off in exchange for voice output working reliably out of the box wherever Node.js ≥18 runs.
 

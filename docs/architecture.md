@@ -2,7 +2,7 @@
 
 ## Overall Architecture
 
-PersonaCore follows a thin **orchestrator + services** architecture. The public `AI` class (`src/controllers/ai.js`) does not itself talk to Gemini, touch a database, or transcode audio. It coordinates a set of single-responsibility services, each of which owns exactly one concern:
+PersonaFlow follows a thin **orchestrator + services** architecture. The public `AI` class (`src/controllers/ai.js`) does not itself talk to Gemini, touch a database, or transcode audio. It coordinates a set of single-responsibility services, each of which owns exactly one concern:
 
 ```
                        ┌────────────────────┐
@@ -173,7 +173,7 @@ new AI(config)
   └─ _voiceOutput = null
 
 ai.useMemory(mongoUri)
-  └─ MemoryService.useMongo(mongoUri, 'personacore_history')
+  └─ MemoryService.useMongo(mongoUri, 'personaflow_history')
         └─ swaps _store to new MongoStore(...)   [connects lazily]
 
 ai.useVision()
@@ -212,7 +212,7 @@ Both backends' write paths (`saveMessage`, `deleteHistory`) are read-modify-writ
 ## Folder Structure
 
 ```
-personacore/
+personaflow/
 ├── index.js                        # Public entry point  exports AI
 ├── package.json
 ├── examples/

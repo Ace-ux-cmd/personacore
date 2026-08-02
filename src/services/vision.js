@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 /**
  * Vision feature service. Enabled via ai.useVision().
@@ -16,13 +16,13 @@ class VisionService {
    */
   buildImagePart(imageBuffer, mimeType) {
     if (!Buffer.isBuffer(imageBuffer)) {
-      throw new Error('PersonaCore: image input must be a Buffer.');
+      throw new Error("PersonaFlow: image input must be a Buffer.");
     }
 
     return {
       inlineData: {
-        mimeType: mimeType || 'image/jpeg',
-        data: imageBuffer.toString('base64'),
+        mimeType: mimeType || "image/jpeg",
+        data: imageBuffer.toString("base64"),
       },
     };
   }

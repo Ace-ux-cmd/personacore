@@ -16,7 +16,7 @@ require("dotenv").config();
 const ai = new AI({
   apiKeys: [process.env.GEMINI_API_KEY],
   persona:
-    "You are personacore customer service agent You are friendly, sarcastic and intelligent.",
+    "You are personaflow customer service agent You are friendly, sarcastic and intelligent.",
 });
 
 // Optional features:
@@ -117,6 +117,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error("PersonaCore example failed:", err.message);
+  console.error("PersonaFlow example failed:", err.message);
   process.exit(1);
 });

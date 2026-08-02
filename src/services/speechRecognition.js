@@ -1,6 +1,6 @@
-'use strict';
+"use strict";
 
-const { detectAudioMimeType } = require('../utils/fileTypeSniffer');
+const { detectAudioMimeType } = require("../utils/fileTypeSniffer");
 
 /**
  * Speech recognition feature service. Enabled via ai.useSpeechRecognition()
@@ -25,10 +25,13 @@ class SpeechRecognitionService {
    */
   async transcribe(voiceBuffer) {
     if (!Buffer.isBuffer(voiceBuffer)) {
-      throw new Error('PersonaCore: voice input must be a Buffer.');
+      throw new Error("PersonaFlow: voice input must be a Buffer.");
     }
 
-    return this._gemini.transcribeAudio(voiceBuffer, detectAudioMimeType(voiceBuffer));
+    return this._gemini.transcribeAudio(
+      voiceBuffer,
+      detectAudioMimeType(voiceBuffer),
+    );
   }
 }
 

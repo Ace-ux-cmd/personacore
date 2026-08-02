@@ -1,7 +1,7 @@
-'use strict';
+"use strict";
 
 /**
- * PersonaCore's internal conversational behavior layer.
+ * PersonaFlow's internal conversational behavior layer.
  *
  * This is combined with the developer-supplied persona on every request
  * (design principle "Human-First Conversations"). It is not

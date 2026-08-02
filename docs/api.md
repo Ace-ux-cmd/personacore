@@ -3,7 +3,7 @@
 ## Installation & Import
 
 ```js
-const AI = require("personacore");
+const AI = require("personaflow");
 ```
 
 `AI` is the default (and only) export.
@@ -12,22 +12,22 @@ const AI = require("personacore");
 
 ## `new AI(config)`
 
-Creates a new PersonaCore instance.
+Creates a new PersonaFlow instance.
 
 ### Parameters
 
 | Field          | Type       | Required | Description                                                                                                                             |
 | -------------- | ---------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | `apiKeys`      | `string[]` | Yes      | One or more Gemini API keys. Must be a non-empty array of non-empty strings.                                                            |
-| `persona`      | `string`   | Yes      | Description of the character/persona this instance should embody. Combined internally with PersonaCore's conversational-behavior layer. |
+| `persona`      | `string`   | Yes      | Description of the character/persona this instance should embody. Combined internally with PersonaFlow's conversational-behavior layer. |
 | `historyLimit` | `number`   | No       | Maximum number of messages retained per user. Must be a positive number if provided. Defaults to `10`.                                  |
 
 ### Throws
 
-- `'PersonaCore: a configuration object is required.'` no config object passed.
-- `'PersonaCore: "apiKeys" must be a non-empty array of Gemini API key strings.'`
-- `'PersonaCore: "persona" is required and must be a string.'`
-- `'PersonaCore: "historyLimit" must be a positive number.'`
+- `'PersonaFlow: a configuration object is required.'` no config object passed.
+- `'PersonaFlow: "apiKeys" must be a non-empty array of Gemini API key strings.'`
+- `'PersonaFlow: "persona" is required and must be a string.'`
+- `'PersonaFlow: "historyLimit" must be a positive number.'`
 
 ### Example
 
@@ -45,7 +45,7 @@ const ai = new AI({
 
 Switches conversation history storage from the default in-memory store to MongoDB. History persists across process restarts once enabled.
 
-Each `AI` instance gets its own dedicated collection (`personacore_history`, scoped internally per instance), so multiple instances never share history even against the same MongoDB URI.
+Each `AI` instance gets its own dedicated collection (`personaflow_history`, scoped internally per instance), so multiple instances never share history even against the same MongoDB URI.
 
 ### Parameters
 
@@ -55,12 +55,12 @@ Each `AI` instance gets its own dedicated collection (`personacore_history`, sco
 
 ### Throws
 
-- `'PersonaCore: useMemory() requires a valid MongoDB connection string.'`
+- `'PersonaFlow: useMemory() requires a valid MongoDB connection string.'`
 
 ### Example
 
 ```js
-ai.useMemory("mongodb://localhost:27017/personacore");
+ai.useMemory("mongodb://localhost:27017/personaflow");
 ```
 
 The connection is established lazily this call itself is synchronous, and connection errors surface the first time history is actually read or written.
@@ -108,8 +108,8 @@ Enables spoken audio replies. When enabled, some fraction of `handleMessage()` c
 
 ### Throws
 
-- `'PersonaCore: "probability" must be a number between 0 and 1.'`
-- `'PersonaCore: "includeText" must be a boolean.'`
+- `'PersonaFlow: "probability" must be a number between 0 and 1.'`
+- `'PersonaFlow: "includeText" must be a boolean.'`
 
 ### Example
 
@@ -138,14 +138,14 @@ Processes a single conversational turn: resolves input (transcribing voice if ne
 
 ### Throws (synchronously, before any model call)
 
-- `'PersonaCore: handleMessage() requires a request object.'`
-- `'PersonaCore: handleMessage() requires a "userId" string.'`
-- `'PersonaCore: handleMessage() requires at least one of "text", "image", or "voice".'`
-- `'PersonaCore: "image" must be a Buffer.'`
-- `'PersonaCore: "voice" must be a Buffer.'`
-- `'PersonaCore: "text" must be a string.'`
-- `'PersonaCore: voice input requires useSpeechRecognition() to be enabled.'`
-- `'PersonaCore: image input requires useVision() to be enabled.'`
+- `'PersonaFlow: handleMessage() requires a request object.'`
+- `'PersonaFlow: handleMessage() requires a "userId" string.'`
+- `'PersonaFlow: handleMessage() requires at least one of "text", "image", or "voice".'`
+- `'PersonaFlow: "image" must be a Buffer.'`
+- `'PersonaFlow: "voice" must be a Buffer.'`
+- `'PersonaFlow: "text" must be a string.'`
+- `'PersonaFlow: voice input requires useSpeechRecognition() to be enabled.'`
+- `'PersonaFlow: image input requires useVision() to be enabled.'`
 
 ### Returns
 
@@ -242,7 +242,7 @@ Retrieves a user's stored conversation history.
 
 ### Throws (synchronously, before any storage call)
 
-- `'PersonaCore: getHistory() requires a valid userId.'`
+- `'PersonaFlow: getHistory() requires a valid userId.'`
 
 ### Returns
 
@@ -279,7 +279,7 @@ Deletes a user's stored conversation history.
 
 ### Throws (synchronously, before any storage call)
 
-- `'PersonaCore: deleteHistory() requires a valid userId.'`
+- `'PersonaFlow: deleteHistory() requires a valid userId.'`
 
 ### Returns
 

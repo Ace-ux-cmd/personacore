@@ -1,6 +1,6 @@
 # Requirements
 
-This document is the formal specification for PersonaCore. It defines what the SDK must do (functional requirements) and the qualities it must exhibit while doing it (non-functional requirements). This acts as the implementation contract behavior described here should be treated as authoritative over any single code comment.
+This document is the formal specification for PersonaFlow. It defines what the SDK must do (functional requirements) and the qualities it must exhibit while doing it (non-functional requirements). This acts as the implementation contract behavior described here should be treated as authoritative over any single code comment.
 
 Requirement IDs are stable identifiers for cross-referencing from `architecture.md`, `api.md`, and `decisions.md`.
 
@@ -100,7 +100,7 @@ Requirement IDs are stable identifiers for cross-referencing from `architecture.
 
 ### Usability (Developer Experience)
 
-- **NFR-7.** All configuration and request validation errors are synchronous, descriptive, and prefixed identifiably (`PersonaCore: ...`) so they are easy to distinguish from upstream Gemini errors.
+- **NFR-7.** All configuration and request validation errors are synchronous, descriptive, and prefixed identifiably (`PersonaFlow: ...`) so they are easy to distinguish from upstream Gemini errors.
 - **NFR-8.** The minimum viable configuration (`apiKeys`, `persona`) is sufficient to send and receive a conversational message; no other setup, service, or environment dependency is required.
 
 ### Performance

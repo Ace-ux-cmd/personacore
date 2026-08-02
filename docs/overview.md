@@ -2,13 +2,13 @@
 
 ## Vision
 
-PersonaCore exists to make it easy to give an application a consistent, believable conversational character without every developer having to re-solve prompt engineering, conversation history, multimodal input, and API resilience from scratch.
+PersonaFlow exists to make it easy to give an application a consistent, believable conversational character without every developer having to re-solve prompt engineering, conversation history, multimodal input, and API resilience from scratch.
 
 A developer should be able to describe a persona in a sentence or two and get back something that talks like a person having a conversation, not a chatbot performing customer service.
 
 ## Purpose
 
-Concretely, PersonaCore is a Node.js SDK that wraps Google's Gemini API and provides:
+Concretely, PersonaFlow is a Node.js SDK that wraps Google's Gemini API and provides:
 
 - A single orchestration point (`AI`) for turning a persona description plus a user message into a conversational reply.
 - Built-in, per-user conversation history, so multi-turn context "just works" without the developer managing arrays or database rows themselves.
@@ -25,10 +25,10 @@ Concretely, PersonaCore is a Node.js SDK that wraps Google's Gemini API and prov
 
 ## Non-Goals
 
-- **Not a multi-provider abstraction.** PersonaCore does not attempt to support OpenAI, Anthropic, or other model providers behind a common interface. It is built specifically around Gemini's capabilities and request/response shapes.
-- **Not a full chat platform.** PersonaCore does not provide UI components, transport layers (WebSocket servers, REST endpoints), authentication, or user management. It is a message-in, response-out SDK meant to be embedded inside a larger application.
-- **Not a general-purpose agent framework.** There is no tool-use, function-calling, or autonomous task execution built into the core orchestration. PersonaCore's job is conversation, not task automation.
-- **Not a prompt-engineering toolkit.** Developers supply a persona description; PersonaCore does not offer prompt templating, few-shot example management, or persona versioning as first-class features.
+- **Not a multi-provider abstraction.** PersonaFlow does not attempt to support OpenAI, Anthropic, or other model providers behind a common interface. It is built specifically around Gemini's capabilities and request/response shapes.
+- **Not a full chat platform.** PersonaFlow does not provide UI components, transport layers (WebSocket servers, REST endpoints), authentication, or user management. It is a message-in, response-out SDK meant to be embedded inside a larger application.
+- **Not a general-purpose agent framework.** There is no tool-use, function-calling, or autonomous task execution built into the core orchestration. PersonaFlow's job is conversation, not task automation.
+- **Not a prompt-engineering toolkit.** Developers supply a persona description; PersonaFlow does not offer prompt templating, few-shot example management, or persona versioning as first-class features.
 - **Not responsible for audio capture or playback.** Voice input/output work with raw audio buffers; recording from a microphone and playing back audio to a user are the responsibility of the host application.
 
 ## Design Principles
@@ -53,4 +53,4 @@ Out of the box, with only `apiKeys` and `persona` supplied:
 
 - Node.js developers building chat-based product features (companion apps, character-driven assistants, persona-based bots) who want conversational behavior without hand-rolling prompt construction, history management, and retry logic.
 - Teams already committed to Gemini as their model provider, who want a purpose-built layer on top of it rather than a generic multi-provider SDK.
-- Developers comfortable working directly with buffers and structured JSON responses, integrating PersonaCore into their own transport layer (HTTP handler, WebSocket server, job queue, etc.).
+- Developers comfortable working directly with buffers and structured JSON responses, integrating PersonaFlow into their own transport layer (HTTP handler, WebSocket server, job queue, etc.).

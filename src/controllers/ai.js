@@ -9,7 +9,7 @@ const defaults = require("../config/defaults");
 const { detectImageMimeType } = require("../utils/fileTypeSniffer");
 
 /**
- * PersonaCore's main entry point.
+ * PersonaFlow's main entry point.
  *
  * Coordinates the feature services (memory, vision, speech recognition,
  * voice output) and the Gemini service, but contains no Gemini-specific
@@ -21,7 +21,7 @@ class AI {
    */
   constructor(config) {
     if (!config || typeof config !== "object") {
-      throw new Error("PersonaCore: a configuration object is required.");
+      throw new Error("PersonaFlow: a configuration object is required.");
     }
 
     const { apiKeys, persona, historyLimit } = config;
@@ -32,13 +32,13 @@ class AI {
       apiKeys.some((k) => typeof k !== "string" || !k)
     ) {
       throw new Error(
-        'PersonaCore: "apiKeys" must be a non-empty array of Gemini API key strings.',
+        'PersonaFlow: "apiKeys" must be a non-empty array of Gemini API key strings.',
       );
     }
 
     if (!persona || typeof persona !== "string") {
       throw new Error(
-        'PersonaCore: "persona" is required and must be a string.',
+        'PersonaFlow: "persona" is required and must be a string.',
       );
     }
 
@@ -46,7 +46,7 @@ class AI {
       historyLimit !== undefined &&
       (typeof historyLimit !== "number" || historyLimit <= 0)
     ) {
-      throw new Error('PersonaCore: "historyLimit" must be a positive number.');
+      throw new Error('PersonaFlow: "historyLimit" must be a positive number.');
     }
 
     this._gemini = new GeminiService(apiKeys, persona);
@@ -67,10 +67,10 @@ class AI {
   useMemory(mongoUri) {
     if (!mongoUri || typeof mongoUri !== "string") {
       throw new Error(
-        "PersonaCore: useMemory() requires a valid MongoDB connection string.",
+        "PersonaFlow: useMemory() requires a valid MongoDB connection string.",
       );
     }
-    const collectionName = `personacore_history`;
+    const collectionName = `personaflow_history`;
     this._memory.useMongo(mongoUri, collectionName);
   }
 
@@ -100,7 +100,7 @@ class AI {
         options.probability > 1
       ) {
         throw new Error(
-          'PersonaCore: "probability" must be a number between 0 and 1.',
+          'PersonaFlow: "probability" must be a number between 0 and 1.',
         );
       }
     }
@@ -108,7 +108,7 @@ class AI {
       options.includeText !== undefined &&
       typeof options.includeText !== "boolean"
     ) {
-      throw new Error('PersonaCore: "includeText" must be a boolean.');
+      throw new Error('PersonaFlow: "includeText" must be a boolean.');
     }
 
     // Resolve the default probability based on includeText
@@ -146,7 +146,7 @@ class AI {
     if (voice) {
       if (!this._speechRecognition) {
         throw new Error(
-          "PersonaCore: voice input requires useSpeechRecognition() to be enabled.",
+          "PersonaFlow: voice input requires useSpeechRecognition() to be enabled.",
         );
       }
       const transcription = await this._speechRecognition.transcribe(voice);
@@ -156,7 +156,7 @@ class AI {
 
     if (image && !this._vision) {
       throw new Error(
-        "PersonaCore: image input requires useVision() to be enabled.",
+        "PersonaFlow: image input requires useVision() to be enabled.",
       );
     }
 
@@ -190,7 +190,10 @@ class AI {
         role: "user",
         text: effectiveText || "",
       });
-      await this._memory.saveMessage(userId, { role: "model", text: reply.text });
+      await this._memory.saveMessage(userId, {
+        role: "model",
+        text: reply.text,
+      });
     } catch (err) {
       // The model reply itself succeeded (we have reply.apiKeyIndex/rotated),
       // so that rotation info is still reported even though persistence failed.
@@ -232,7 +235,7 @@ class AI {
    */
   async getHistory(userId, options = {}) {
     if (!userId || typeof userId !== "string") {
-      throw new Error("PersonaCore: getHistory() requires a valid userId.");
+      throw new Error("PersonaFlow: getHistory() requires a valid userId.");
     }
     try {
       return await this._memory.getHistory(userId, options.limit);
@@ -250,7 +253,7 @@ class AI {
    */
   async deleteHistory(userId, options = {}) {
     if (!userId || typeof userId !== "string") {
-      throw new Error("PersonaCore: deleteHistory() requires a valid userId.");
+      throw new Error("PersonaFlow: deleteHistory() requires a valid userId.");
     }
     try {
       return await this._memory.deleteHistory(userId, options.limit);
@@ -267,27 +270,27 @@ class AI {
   _validateHandleMessageRequest(request) {
     if (!request || typeof request !== "object") {
       throw new Error(
-        "PersonaCore: handleMessage() requires a request object.",
+        "PersonaFlow: handleMessage() requires a request object.",
       );
     }
     if (!request.userId || typeof request.userId !== "string") {
       throw new Error(
-        'PersonaCore: handleMessage() requires a "userId" string.',
+        'PersonaFlow: handleMessage() requires a "userId" string.',
       );
     }
     if (!request.text && !request.image && !request.voice) {
       throw new Error(
-        'PersonaCore: handleMessage() requires at least one of "text", "image", or "voice".',
+        'PersonaFlow: handleMessage() requires at least one of "text", "image", or "voice".',
       );
     }
     if (request.image !== undefined && !Buffer.isBuffer(request.image)) {
-      throw new Error('PersonaCore: "image" must be a Buffer.');
+      throw new Error('PersonaFlow: "image" must be a Buffer.');
     }
     if (request.voice !== undefined && !Buffer.isBuffer(request.voice)) {
-      throw new Error('PersonaCore: "voice" must be a Buffer.');
+      throw new Error('PersonaFlow: "voice" must be a Buffer.');
     }
     if (request.text !== undefined && typeof request.text !== "string") {
-      throw new Error('PersonaCore: "text" must be a string.');
+      throw new Error('PersonaFlow: "text" must be a string.');
     }
   }
 

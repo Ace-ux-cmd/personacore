@@ -1,5 +1,5 @@
 {
-  "name": "personacore",
+  "name": "personaflow",
   "version": "0.1.0",
   "description": "A persona-driven conversational AI SDK for Node.js, powered by Gemini.",
   "main": "index.js",
