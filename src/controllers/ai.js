@@ -6,6 +6,7 @@ const VisionService = require("../services/vision");
 const SpeechRecognitionService = require("../services/speechRecognition");
 const VoiceOutputService = require("../services/voiceOutput");
 const defaults = require("../config/defaults");
+const { detectImageMimeType } = require("../utils/fileTypeSniffer");
 
 /**
  * PersonaCore's main entry point.
@@ -334,7 +335,9 @@ class AI {
       currentParts.push({ text });
     }
     if (image) {
-      currentParts.push(this._vision.buildImagePart(image));
+      currentParts.push(
+        this._vision.buildImagePart(image, detectImageMimeType(image)),
+      );
     }
 
     contents.push({ role: "user", parts: currentParts });
