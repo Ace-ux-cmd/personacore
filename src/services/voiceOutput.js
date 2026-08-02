@@ -4,6 +4,14 @@ const defaults = require('../config/defaults');
 const { pcmToOggOpus, parseSampleRate } = require('../utils/audioTranscoder');
 
 /**
+ * Model name reported in a transcoding failure's metadata. Transcoding
+ * happens after synthesizeSpeech() has already succeeded, so there's no
+ * fresh Gemini call to attribute this to directly; the voice output model
+ * is reported for context instead.
+ */
+const TRANSCODING_MODEL = defaults.MODELS.VOICE_OUTPUT;
+
+/**
  * Voice output feature service. Enabled via ai.useVoiceOutput().
  *
  * `probability` gates whether audio is generated at all for a given
@@ -47,7 +55,10 @@ class VoiceOutputService {
    * @param {string} text
    * @returns {Promise<object>} On success: {success: true, audioBuffer,
    *   mimeType, apiKeyIndex, keysTriedThisRequest, rotated}. On failure:
-   *   {success: false, error, metadata} (passed through from synthesizeSpeech).
+   *   {success: false, error: {code, message}, metadata: {keyIndex, model}}
+   *   — either passed through from synthesizeSpeech(), or, if the Gemini
+   *   call succeeded but transcoding the returned PCM to OGG/Opus failed,
+   *   constructed here in the same shape.
    */
   async generate(text) {
     const result = await this._gemini.synthesizeSpeech(text);
@@ -58,17 +69,35 @@ class VoiceOutputService {
 
     const { audioBuffer, mimeType, apiKeyIndex, keysTriedThisRequest, rotated } = result;
 
-    const sampleRate = parseSampleRate(mimeType);
-    const oggOpusBuffer = await pcmToOggOpus(audioBuffer, sampleRate);
+    try {
+      const sampleRate = parseSampleRate(mimeType);
+      const oggOpusBuffer = await pcmToOggOpus(audioBuffer, sampleRate);
 
-    return {
-      success: true,
-      audioBuffer: oggOpusBuffer,
-      mimeType: defaults.VOICE_OUTPUT.OUTPUT_MIME_TYPE,
-      apiKeyIndex,
-      keysTriedThisRequest,
-      rotated,
-    };
+      return {
+        success: true,
+        audioBuffer: oggOpusBuffer,
+        mimeType: defaults.VOICE_OUTPUT.OUTPUT_MIME_TYPE,
+        apiKeyIndex,
+        keysTriedThisRequest,
+        rotated,
+      };
+    } catch (err) {
+      // parseSampleRate() and pcmToOggOpus() throw/reject on malformed
+      // mimeType or ffmpeg failure respectively. The Gemini call itself
+      // already succeeded (we have apiKeyIndex/rotated from it), so that
+      // rotation info is still reported even though this turn fails overall.
+      return {
+        success: false,
+        error: {
+          code: 'AUDIO_TRANSCODING_ERROR',
+          message: err.message,
+        },
+        metadata: {
+          keyIndex: apiKeyIndex,
+          model: TRANSCODING_MODEL,
+        },
+      };
+    }
   }
 }
 

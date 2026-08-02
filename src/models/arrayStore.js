@@ -1,5 +1,7 @@
 'use strict';
 
+const KeyedQueue = require('../utils/keyedQueue');
+
 /**
  * In-memory conversation history store.
  *
@@ -9,16 +11,18 @@
  *
  * Message format (must match MongoStore):
  * { role: 'user' | 'model', text: string, createdAt: Date }
+ *
+ * All read-modify-write access to a given userId's history (save, delete)
+ * is serialized through a KeyedQueue, so two concurrent calls for the same
+ * userId can't interleave their get -> mutate -> set steps and silently
+ * lose an update.
  */
 class ArrayStore {
   constructor(historyLimit) {
     /** @type {Map<string, Array<{role: string, text: string, createdAt: Date}>>} */
-    if(historyLimit < 1){
-      throw new Error("History limit must be greater than 0");
-    }
     this._histories = new Map();
     this._historyLimit = historyLimit;
-    
+    this._queue = new KeyedQueue();
   }
 
   /**
@@ -34,14 +38,16 @@ class ArrayStore {
       throw new Error('ArrayStore.saveMessage: message must have a role and text.');
     }
 
-    const history = this._histories.get(userId) || [];
-    history.push({
-      role: message.role,
-      text: message.text,
-      createdAt: new Date(),
+    return this._queue.run(userId, async () => {
+      const history = this._histories.get(userId) || [];
+      history.push({
+        role: message.role,
+        text: message.text,
+        createdAt: new Date(),
+      });
+      const trimmed = history.length > this._historyLimit ? history.slice(history.length - this._historyLimit) : history;
+      this._histories.set(userId, trimmed);
     });
-    const trimmed = history.length > this._historyLimit ? history.slice(history.length - this._historyLimit) : history;
-    this._histories.set(userId, trimmed);
   }
 
   /**
@@ -75,14 +81,16 @@ class ArrayStore {
       throw new Error('ArrayStore.deleteHistory: userId is required.');
     }
 
-    if (typeof limit !== 'number') {
-      this._histories.delete(userId);
-      return;
-    }
+    return this._queue.run(userId, async () => {
+      if (typeof limit !== 'number') {
+        this._histories.delete(userId);
+        return;
+      }
 
-    const history = this._histories.get(userId) || [];
-    const keepCount = Math.max(history.length - limit, 0);
-    this._histories.set(userId, history.slice(0, keepCount));
+      const history = this._histories.get(userId) || [];
+      const keepCount = Math.max(history.length - limit, 0);
+      this._histories.set(userId, history.slice(0, keepCount));
+    });
   }
 }
 

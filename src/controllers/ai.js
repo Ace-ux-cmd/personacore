@@ -160,7 +160,12 @@ class AI {
     }
 
     // - Retrieve recent history for this user.
-    const history = await this._memory.getRecentHistoryForModel(userId);
+    let history;
+    try {
+      history = await this._memory.getRecentHistoryForModel(userId);
+    } catch (err) {
+      return this._storageFailureResponse(err, startTime);
+    }
     const contents = this._buildContents(history, effectiveText, image);
 
     //- Generate the conversational reply.
@@ -179,11 +184,17 @@ class AI {
 
     // - Persist both turns, The stored user turn is always text,
     //    the transcription if voice was used, or the raw text otherwise.
-    await this._memory.saveMessage(userId, {
-      role: "user",
-      text: effectiveText || "",
-    });
-    await this._memory.saveMessage(userId, { role: "model", text: reply.text });
+    try {
+      await this._memory.saveMessage(userId, {
+        role: "user",
+        text: effectiveText || "",
+      });
+      await this._memory.saveMessage(userId, { role: "model", text: reply.text });
+    } catch (err) {
+      // The model reply itself succeeded (we have reply.apiKeyIndex/rotated),
+      // so that rotation info is still reported even though persistence failed.
+      return this._storageFailureResponse(err, startTime, reply);
+    }
 
     // 5. Optionally generate voice output.
     let voiceOutputResult = null;
@@ -214,24 +225,37 @@ class AI {
    * Retrieves a user's conversation history.
    * @param {string} userId
    * @param {{limit?: number}} [options]
+   * @returns {Promise<Array|object>} The history array on success, or a
+   *   {success: false, error, metadata} object if the storage backend fails
+   *   (e.g. MongoStore could not connect).
    */
   async getHistory(userId, options = {}) {
     if (!userId || typeof userId !== "string") {
       throw new Error("PersonaCore: getHistory() requires a valid userId.");
     }
-    return this._memory.getHistory(userId, options.limit);
+    try {
+      return await this._memory.getHistory(userId, options.limit);
+    } catch (err) {
+      return this._storageFailureResponse(err, Date.now());
+    }
   }
 
   /**
    * Deletes a user's conversation history.
    * @param {string} userId
    * @param {{limit?: number}} [options]
+   * @returns {Promise<void|object>} undefined on success, or a
+   *   {success: false, error, metadata} object if the storage backend fails.
    */
   async deleteHistory(userId, options = {}) {
     if (!userId || typeof userId !== "string") {
       throw new Error("PersonaCore: deleteHistory() requires a valid userId.");
     }
-    return this._memory.deleteHistory(userId, options.limit);
+    try {
+      return await this._memory.deleteHistory(userId, options.limit);
+    } catch (err) {
+      return this._storageFailureResponse(err, Date.now());
+    }
   }
 
   // ---------------------------------------------------------------------
@@ -264,6 +288,35 @@ class AI {
     if (request.text !== undefined && typeof request.text !== "string") {
       throw new Error('PersonaCore: "text" must be a string.');
     }
+  }
+
+  /**
+   * Converts a thrown storage-backend error (e.g. MongoStore's lazy
+   * connection failure) into the standard {success, error, metadata}
+   * response shape used everywhere else in the SDK, instead of letting it
+   * reject the caller's promise as a raw Error.
+   * @param {Error} err
+   * @param {number} startTime
+   * @param {object} [reply] - The successful Gemini reply, if this failure
+   *   happened after generation (e.g. while persisting history). Its
+   *   apiKeyIndex/rotated/keysTriedThisRequest are carried through so
+   *   callers still see which key served the turn that couldn't be saved.
+   * @private
+   */
+  _storageFailureResponse(err, startTime, reply) {
+    return {
+      success: false,
+      error: {
+        code: "STORAGE_ERROR",
+        message: err.message,
+      },
+      metadata: {
+        apiKeyIndex: reply ? reply.apiKeyIndex : null,
+        rotated: reply ? reply.rotated : null,
+        keysTriedThisRequest: reply ? reply.keysTriedThisRequest : null,
+        responseTime: Date.now() - startTime,
+      },
+    };
   }
 
   /**

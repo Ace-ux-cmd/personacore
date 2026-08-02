@@ -1,6 +1,7 @@
 'use strict';
 
 const mongoose = require('mongoose');
+const KeyedQueue = require('../utils/keyedQueue');
 
 /**
  * MongoDB conversation history store.
@@ -18,6 +19,12 @@ const mongoose = require('mongoose');
  *
  * Message format (must match ArrayStore)
  * { role: 'user' | 'model', text: string, createdAt: Date }
+ *
+ * saveMessage's insert-then-trim pair and deleteHistory are each
+ * read-modify-write against a userId's documents. Two concurrent calls for
+ * the same userId could otherwise interleave (e.g. both trims racing,
+ * over- or under-shooting historyLimit), so both are serialized per userId
+ * through a KeyedQueue, the same way ArrayStore serializes its Map access.
  */
 class MongoStore {
   /**
@@ -28,14 +35,12 @@ class MongoStore {
     if (!uri || typeof uri !== 'string') {
       throw new Error('MongoStore: a valid MongoDB connection string is required.');
     }
-   if(historyLimit < 1){
-      throw new Error("History limit must be greater than 0");
-    }
     this._historyLimit = historyLimit;
     this._collectionName = collectionName;
     this._connection = mongoose.createConnection(uri);
     this._model = null;
     this._connectPromise = null;
+    this._queue = new KeyedQueue();
   }
 
   /**
@@ -85,23 +90,25 @@ class MongoStore {
       throw new Error('MongoStore.saveMessage: message must have a role and text.');
     }
 
-    const Model = await this._getModel();
-    await Model.create({
-      userId,
-      role: message.role,
-      text: message.text,
+    return this._queue.run(userId, async () => {
+      const Model = await this._getModel();
+      await Model.create({
+        userId,
+        role: message.role,
+        text: message.text,
+      });
+
+      const excessDocs = await Model.find({userId})
+      .sort({createdAt: -1})
+      .skip(this._historyLimit)
+      .select('id')
+      .lean();
+
+      if(excessDocs.length > 0){
+        const idsToDelete = excessDocs.map(doc => doc._id);
+        await Model.deleteMany({_id: {$in: idsToDelete}});
+      }
     });
-
-    const excessDocs = await Model.find({userId})
-    .sort({createdAt: -1})
-    .skip(this._historyLimit)
-    .select('id')
-    .lean();
-
-    if(excessDocs.length > 0){
-      const idsToDelete = excessDocs.map(doc => doc._id);
-      await Model.deleteMany({_id: {$in: idsToDelete}});
-    }
   }
 
   /**
@@ -142,23 +149,25 @@ class MongoStore {
       throw new Error('MongoStore.deleteHistory: userId is required.');
     }
 
-    const Model = await this._getModel();
+    return this._queue.run(userId, async () => {
+      const Model = await this._getModel();
 
-    if (typeof limit !== 'number') {
-      await Model.deleteMany({ userId });
-      return;
-    }
+      if (typeof limit !== 'number') {
+        await Model.deleteMany({ userId });
+        return;
+      }
 
-    const recentDocs = await Model.find({ userId })
-      .sort({ createdAt: -1 })
-      .limit(limit)
-      .select('_id')
-      .lean();
+      const recentDocs = await Model.find({ userId })
+        .sort({ createdAt: -1 })
+        .limit(limit)
+        .select('_id')
+        .lean();
 
-    const idsToDelete = recentDocs.map((doc) => doc._id);
-    if (idsToDelete.length > 0) {
-      await Model.deleteMany({ _id: { $in: idsToDelete } });
-    }
+      const idsToDelete = recentDocs.map((doc) => doc._id);
+      if (idsToDelete.length > 0) {
+        await Model.deleteMany({ _id: { $in: idsToDelete } });
+      }
+    });
   }
 }
 
