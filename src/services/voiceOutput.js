@@ -1,7 +1,7 @@
-'use strict';
+"use strict";
 
-const defaults = require('../config/defaults');
-const { pcmToOggOpus, parseSampleRate } = require('../utils/audioTranscoder');
+const defaults = require("../config/defaults");
+const { pcmToOggOpus, parseSampleRate } = require("../utils/audioTranscoder");
 
 /**
  * Model name reported in a transcoding failure's metadata. Transcoding
@@ -27,11 +27,13 @@ class VoiceOutputService {
   constructor(geminiService, options = {}) {
     this._gemini = geminiService;
     this._probability =
-      typeof options.probability === 'number'
+      typeof options.probability === "number"
         ? options.probability
         : defaults.VOICE_OUTPUT.PROBABILITY_VOICE_ONLY;
     this._includeText =
-      typeof options.includeText === 'boolean' ? options.includeText : defaults.VOICE_OUTPUT.INCLUDE_TEXT;
+      typeof options.includeText === "boolean"
+        ? options.includeText
+        : defaults.VOICE_OUTPUT.INCLUDE_TEXT;
   }
 
   /**
@@ -50,13 +52,13 @@ class VoiceOutputService {
     return this._includeText;
   }
 
-/**
+  /**
    * Generates OGG/Opus audio for the given text via Gemini TTS.
    * @param {string} text
    * @returns {Promise<object>} On success: {success: true, audioBuffer,
    *   mimeType, apiKeyIndex, keysTriedThisRequest, rotated}. On failure:
    *   {success: false, error: {code, message}, metadata: {keyIndex, model}}
-   *   — either passed through from synthesizeSpeech(), or, if the Gemini
+   *    either passed through from synthesizeSpeech(), or, if the Gemini
    *   call succeeded but transcoding the returned PCM to OGG/Opus failed,
    *   constructed here in the same shape.
    */
@@ -67,7 +69,13 @@ class VoiceOutputService {
       return result;
     }
 
-    const { audioBuffer, mimeType, apiKeyIndex, keysTriedThisRequest, rotated } = result;
+    const {
+      audioBuffer,
+      mimeType,
+      apiKeyIndex,
+      keysTriedThisRequest,
+      rotated,
+    } = result;
 
     try {
       const sampleRate = parseSampleRate(mimeType);
@@ -89,7 +97,7 @@ class VoiceOutputService {
       return {
         success: false,
         error: {
-          code: 'AUDIO_TRANSCODING_ERROR',
+          code: "AUDIO_TRANSCODING_ERROR",
           message: err.message,
         },
         metadata: {

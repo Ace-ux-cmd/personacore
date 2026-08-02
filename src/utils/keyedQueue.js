@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 /**
  * Serializes async operations per key, so concurrent calls for the same
@@ -22,7 +22,7 @@ class KeyedQueue {
    * Runs `fn` only after any previously queued operation for `key` has
    * settled (succeeded or failed), and returns a promise that
    * resolves/rejects with `fn`'s own outcome. One operation's failure
-   * never blocks or fails the next operation queued behind it — only
+   * never blocks or fails the next operation queued behind it  only
    * ordering is shared, not outcome.
    * @param {string} key
    * @param {() => Promise<any>} fn
@@ -37,7 +37,7 @@ class KeyedQueue {
 
     // The stored tail must itself always resolve (never reject), so it
     // never poisons whatever call comes next for this key. It carries no
-    // value — it's purely a "has settled" signal.
+    // value  it's purely a "has settled" signal.
     const tail = result.then(
       () => undefined,
       () => undefined,

@@ -15,7 +15,8 @@ require("dotenv").config();
 
 const ai = new AI({
   apiKeys: [process.env.GEMINI_API_KEY],
-  persona: "You are personacore customer service agent You are friendly, sarcastic and intelligent."
+  persona:
+    "You are personacore customer service agent You are friendly, sarcastic and intelligent.",
 });
 
 // Optional features:
@@ -26,7 +27,7 @@ ai.useMemory(process.env.MONGO_URI);
 // ai.useVoiceOutput({ includeText: true, probability: 0.5 });
 
 // ---------------------------------------------------------------------
-// Media helpers — read sample files from the same directory as this
+// Media helpers  read sample files from the same directory as this
 // script. Edit the filenames below if your test files are named
 // differently.
 // ---------------------------------------------------------------------
@@ -40,7 +41,7 @@ function loadTestImage() {
   const imagePath = path.join(__dirname, "picture.png");
   if (!fs.existsSync(imagePath)) {
     throw new Error(
-      `Test image not found at ${imagePath}. Add a file named "picture" next to this script.`
+      `Test image not found at ${imagePath}. Add a file named "picture" next to this script.`,
     );
   }
   return fs.readFileSync(imagePath);
@@ -56,14 +57,14 @@ function loadTestVoice() {
   const voicePath = path.join(__dirname, "voice.aac");
   if (!fs.existsSync(voicePath)) {
     throw new Error(
-      `Test audio not found at ${voicePath}. Add a file named "voice" next to this script.`
+      `Test audio not found at ${voicePath}. Add a file named "voice" next to this script.`,
     );
   }
   return fs.readFileSync(voicePath);
 }
 
 // ---------------------------------------------------------------------
-// Scenarios — uncomment exactly one request block inside main().
+// Scenarios  uncomment exactly one request block inside main().
 // ---------------------------------------------------------------------
 
 async function main() {

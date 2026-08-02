@@ -1,6 +1,6 @@
 # Requirements
 
-This document is the formal specification for PersonaCore. It defines what the SDK must do (functional requirements) and the qualities it must exhibit while doing it (non-functional requirements). This acts as the implementation contract — behavior described here should be treated as authoritative over any single code comment.
+This document is the formal specification for PersonaCore. It defines what the SDK must do (functional requirements) and the qualities it must exhibit while doing it (non-functional requirements). This acts as the implementation contract behavior described here should be treated as authoritative over any single code comment.
 
 Requirement IDs are stable identifiers for cross-referencing from `architecture.md`, `api.md`, and `decisions.md`.
 
@@ -35,7 +35,7 @@ Requirement IDs are stable identifiers for cross-referencing from `architecture.
 - **FR-16.** The system instruction sent to Gemini on every conversational call is the combination of the internal conversational-behavior layer and the developer-supplied persona (in that order).
 - **FR-17.** On a successful model reply, both the user's turn (effective text) and the model's reply are persisted to history as a pair.
 - **FR-18.** On a failed model reply, nothing is persisted to history for that turn.
-- **FR-18a.** If the storage backend fails — either while retrieving history before generation, or while persisting a turn after a successful model reply — `handleMessage()` resolves (does not throw) with a structured `{ success: false, error: { code: 'STORAGE_ERROR', message }, metadata }` response. When the failure occurs after a successful model reply, `metadata` still reports that reply's `apiKeyIndex`, `rotated`, and `keysTriedThisRequest`, even though the reply itself is not returned to the caller.
+- **FR-18a.** If the storage backend fails either while retrieving history before generation, or while persisting a turn after a successful model reply `handleMessage()` resolves (does not throw) with a structured `{ success: false, error: { code: 'STORAGE_ERROR', message }, metadata }` response. When the failure occurs after a successful model reply, `metadata` still reports that reply's `apiKeyIndex`, `rotated`, and `keysTriedThisRequest`, even though the reply itself is not returned to the caller.
 - **FR-19.** If voice output is enabled and the probability roll for a given turn succeeds, the SDK generates spoken audio for the model's reply text.
 - **FR-20.** If voice output generation fails after a successful text reply, `handleMessage()` still returns a failure response for that call (the turn is not silently returned as text-only).
 - **FR-20a.** If Gemini TTS succeeds but converting its audio output to the SDK's public OGG/Opus format fails, `handleMessage()` resolves (does not throw) with a structured `{ success: false, error: { code: 'AUDIO_TRANSCODING_ERROR', message }, metadata }` response, with `metadata.keyIndex` reporting the key used for the underlying (successful) TTS call.
@@ -62,7 +62,7 @@ Requirement IDs are stable identifiers for cross-referencing from `architecture.
 ### Speech Recognition (Voice Input)
 
 - **FR-30.** When speech recognition is enabled, a `voice` Buffer supplied to `handleMessage()` is transcribed to text via a dedicated model call before conversational processing begins.
-- **FR-31.** Only the transcription — never the raw audio — is persisted to conversation history.
+- **FR-31.** Only the transcription never the raw audio is persisted to conversation history.
 
 ### Voice Output
 
@@ -89,7 +89,7 @@ Requirement IDs are stable identifiers for cross-referencing from `architecture.
 
 - **NFR-1.** A single failing or rate-limited API key must not cause request failure as long as at least one other configured key is eligible.
 - **NFR-2.** No conversation turn is ever partially persisted: a turn is either fully saved (both user and model messages) or not saved at all.
-- **NFR-2a.** Storage read-modify-write sequences (saving a message, deleting history) for a given `userId` are serialized: concurrent calls for the same `userId` never interleave in a way that loses an update or causes `historyLimit` enforcement to over- or under-trim. Concurrent calls for *different* `userId` values are not serialized against each other.
+- **NFR-2a.** Storage read-modify-write sequences (saving a message, deleting history) for a given `userId` are serialized: concurrent calls for the same `userId` never interleave in a way that loses an update or causes `historyLimit` enforcement to over- or under-trim. Concurrent calls for _different_ `userId` values are not serialized against each other.
 - **NFR-3.** Blacklisted API keys recover automatically over time without operator intervention.
 
 ### Modularity & Maintainability
@@ -121,5 +121,5 @@ Requirement IDs are stable identifiers for cross-referencing from `architecture.
 ### Consistency
 
 - **NFR-15.** History records have an identical shape (`role`, `text`, `createdAt`) regardless of which storage backend is active.
-- **NFR-16.** Response object shape (`success`, `metadata`, and either `text`/`audio` or `error`) is consistent across all `handleMessage()` outcomes, including failures originating downstream of a successful model call (storage failures, audio transcoding failures) — these resolve with a structured failure object rather than rejecting the returned promise.
+- **NFR-16.** Response object shape (`success`, `metadata`, and either `text`/`audio` or `error`) is consistent across all `handleMessage()` outcomes, including failures originating downstream of a successful model call (storage failures, audio transcoding failures) these resolve with a structured failure object rather than rejecting the returned promise.
 - **NFR-17.** Operational failures in `getHistory()` and `deleteHistory()` (i.e. failures of the storage backend itself, as opposed to invalid arguments) resolve with the same structured `{ success: false, error: { code, message }, metadata }` shape used by `handleMessage()`, rather than rejecting the returned promise. Argument validation errors (e.g. a missing `userId`) continue to throw synchronously, consistent with NFR-7.

@@ -3,7 +3,7 @@
 ## Installation & Import
 
 ```js
-const AI = require('personacore');
+const AI = require("personacore");
 ```
 
 `AI` is the default (and only) export.
@@ -16,15 +16,15 @@ Creates a new PersonaCore instance.
 
 ### Parameters
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `apiKeys` | `string[]` | Yes | One or more Gemini API keys. Must be a non-empty array of non-empty strings. |
-| `persona` | `string` | Yes | Description of the character/persona this instance should embody. Combined internally with PersonaCore's conversational-behavior layer. |
-| `historyLimit` | `number` | No | Maximum number of messages retained per user. Must be a positive number if provided. Defaults to `10`. |
+| Field          | Type       | Required | Description                                                                                                                             |
+| -------------- | ---------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `apiKeys`      | `string[]` | Yes      | One or more Gemini API keys. Must be a non-empty array of non-empty strings.                                                            |
+| `persona`      | `string`   | Yes      | Description of the character/persona this instance should embody. Combined internally with PersonaCore's conversational-behavior layer. |
+| `historyLimit` | `number`   | No       | Maximum number of messages retained per user. Must be a positive number if provided. Defaults to `10`.                                  |
 
 ### Throws
 
-- `'PersonaCore: a configuration object is required.'` — no config object passed.
+- `'PersonaCore: a configuration object is required.'` no config object passed.
 - `'PersonaCore: "apiKeys" must be a non-empty array of Gemini API key strings.'`
 - `'PersonaCore: "persona" is required and must be a string.'`
 - `'PersonaCore: "historyLimit" must be a positive number.'`
@@ -34,7 +34,7 @@ Creates a new PersonaCore instance.
 ```js
 const ai = new AI({
   apiKeys: [process.env.GEMINI_API_KEY_1, process.env.GEMINI_API_KEY_2],
-  persona: 'You are Anna. You are friendly, sarcastic and intelligent.',
+  persona: "You are Anna. You are friendly, sarcastic and intelligent.",
   historyLimit: 20,
 });
 ```
@@ -49,9 +49,9 @@ Each `AI` instance gets its own dedicated collection (`personacore_history`, sco
 
 ### Parameters
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `mongoUri` | `string` | Yes | MongoDB connection string. |
+| Field      | Type     | Required | Description                |
+| ---------- | -------- | -------- | -------------------------- |
+| `mongoUri` | `string` | Yes      | MongoDB connection string. |
 
 ### Throws
 
@@ -60,10 +60,10 @@ Each `AI` instance gets its own dedicated collection (`personacore_history`, sco
 ### Example
 
 ```js
-ai.useMemory('mongodb://localhost:27017/personacore');
+ai.useMemory("mongodb://localhost:27017/personacore");
 ```
 
-The connection is established lazily — this call itself is synchronous, and connection errors surface the first time history is actually read or written.
+The connection is established lazily this call itself is synchronous, and connection errors surface the first time history is actually read or written.
 
 ---
 
@@ -101,10 +101,10 @@ Enables spoken audio replies. When enabled, some fraction of `handleMessage()` c
 
 ### Parameters
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `options.includeText` | `boolean` | No | Whether text accompanies generated audio in the response. Defaults to `false`. |
-| `options.probability` | `number` | No | Probability (0–1) that a given reply includes generated audio. If omitted, defaults to `1.0` when `includeText` is `false`, or `0.5` when `includeText` is `true`. |
+| Field                 | Type      | Required | Description                                                                                                                                                        |
+| --------------------- | --------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `options.includeText` | `boolean` | No       | Whether text accompanies generated audio in the response. Defaults to `false`.                                                                                     |
+| `options.probability` | `number`  | No       | Probability (0–1) that a given reply includes generated audio. If omitted, defaults to `1.0` when `includeText` is `false`, or `0.5` when `includeText` is `true`. |
 
 ### Throws
 
@@ -129,12 +129,12 @@ Processes a single conversational turn: resolves input (transcribing voice if ne
 
 ### Parameters
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `userId` | `string` | Yes | Identifies whose conversation this is. History is scoped per `userId`. |
-| `text` | `string` | Conditionally | Text input. At least one of `text`, `image`, `voice` is required. |
-| `image` | `Buffer` | Conditionally | Image input. Requires `useVision()` to have been called. |
-| `voice` | `Buffer` | Conditionally | Voice input (OGG/Opus). Requires `useSpeechRecognition()` to have been called. |
+| Field    | Type     | Required      | Description                                                                    |
+| -------- | -------- | ------------- | ------------------------------------------------------------------------------ |
+| `userId` | `string` | Yes           | Identifies whose conversation this is. History is scoped per `userId`.         |
+| `text`   | `string` | Conditionally | Text input. At least one of `text`, `image`, `voice` is required.              |
+| `image`  | `Buffer` | Conditionally | Image input. Requires `useVision()` to have been called.                       |
+| `voice`  | `Buffer` | Conditionally | Voice input (OGG/Opus). Requires `useSpeechRecognition()` to have been called. |
 
 ### Throws (synchronously, before any model call)
 
@@ -151,7 +151,7 @@ Processes a single conversational turn: resolves input (transcribing voice if ne
 
 A `Promise` resolving to a response object. Shape depends on outcome and enabled features.
 
-#### Success — text only (default)
+#### Success text only (default)
 
 ```js
 {
@@ -174,7 +174,7 @@ A `Promise` resolving to a response object. Shape depends on outcome and enabled
 }
 ```
 
-#### Success — voice output enabled, audio generated this turn
+#### Success voice output enabled, audio generated this turn
 
 ```js
 {
@@ -196,14 +196,14 @@ A `Promise` resolving to a response object. Shape depends on outcome and enabled
                          // | STORAGE_ERROR
     message: 'All available Gemini API keys failed for this request. Last error: ...',
   },
-  metadata: { /* partial metadata: keyIndex, model, responseTime — or apiKeyIndex,
+  metadata: { /* partial metadata: keyIndex, model, responseTime  or apiKeyIndex,
                  rotated, keysTriedThisRequest, responseTime for STORAGE_ERROR */ },
 }
 ```
 
-On failure, nothing is persisted to history for that turn — the user's message is not saved without a corresponding model reply.
+On failure, nothing is persisted to history for that turn the user's message is not saved without a corresponding model reply.
 
-A `STORAGE_ERROR` can occur even after Gemini has already generated a reply — for example, if history retrieval fails before generation, or if the storage backend fails while persisting a turn that was otherwise successful (e.g. `MongoStore` losing its connection). In the latter case, `metadata.apiKeyIndex`/`rotated`/`keysTriedThisRequest` reflect the Gemini call that *did* succeed, even though the overall result is a failure — the generated reply itself is not returned or recoverable through this call.
+A `STORAGE_ERROR` can occur even after Gemini has already generated a reply for example, if history retrieval fails before generation, or if the storage backend fails while persisting a turn that was otherwise successful (e.g. `MongoStore` losing its connection). In the latter case, `metadata.apiKeyIndex`/`rotated`/`keysTriedThisRequest` reflect the Gemini call that _did_ succeed, even though the overall result is a failure the generated reply itself is not returned or recoverable through this call.
 
 An `AUDIO_TRANSCODING_ERROR` can similarly occur after Gemini TTS has already returned audio successfully, if converting that audio to OGG/Opus fails (e.g. a malformed sample rate, or the bundled ffmpeg binary failing). As with `STORAGE_ERROR`, `metadata.keyIndex` reflects the Gemini call that succeeded.
 
@@ -211,19 +211,19 @@ An `AUDIO_TRANSCODING_ERROR` can similarly occur after Gemini TTS has already re
 
 ```js
 // Text-only
-const res = await ai.handleMessage({ userId: 'user-123', text: 'Hello!' });
+const res = await ai.handleMessage({ userId: "user-123", text: "Hello!" });
 
 // With an image (requires useVision())
 const res = await ai.handleMessage({
-  userId: 'user-123',
-  text: 'What is this?',
-  image: fs.readFileSync('./photo.jpg'),
+  userId: "user-123",
+  text: "What is this?",
+  image: fs.readFileSync("./photo.jpg"),
 });
 
 // With voice input (requires useSpeechRecognition())
 const res = await ai.handleMessage({
-  userId: 'user-123',
-  voice: fs.readFileSync('./message.ogg'),
+  userId: "user-123",
+  voice: fs.readFileSync("./message.ogg"),
 });
 ```
 
@@ -235,10 +235,10 @@ Retrieves a user's stored conversation history.
 
 ### Parameters
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `userId` | `string` | Yes | The user whose history to retrieve. |
-| `options.limit` | `number` | No | Maximum number of most-recent messages to return. Omit for the full stored history (up to `historyLimit`). |
+| Field           | Type     | Required | Description                                                                                                |
+| --------------- | -------- | -------- | ---------------------------------------------------------------------------------------------------------- |
+| `userId`        | `string` | Yes      | The user whose history to retrieve.                                                                        |
+| `options.limit` | `number` | No       | Maximum number of most-recent messages to return. Omit for the full stored history (up to `historyLimit`). |
 
 ### Throws (synchronously, before any storage call)
 
@@ -249,16 +249,16 @@ Retrieves a user's stored conversation history.
 A `Promise` resolving to one of two shapes:
 
 - **Success:** `Array<{ role: 'user' | 'model', text: string, createdAt: Date }>`, in chronological order (oldest first).
-- **Storage failure:** `{ success: false, error: { code: 'STORAGE_ERROR', message }, metadata }` — see [Error Codes Reference](#error-codes-reference). This happens if the active storage backend itself fails (e.g. `MongoStore` cannot connect); it does not throw.
+- **Storage failure:** `{ success: false, error: { code: 'STORAGE_ERROR', message }, metadata }` see [Error Codes Reference](#error-codes-reference). This happens if the active storage backend itself fails (e.g. `MongoStore` cannot connect); it does not throw.
 
 Check for `Array.isArray(result)` (or `result.success === false`) to distinguish the two before using the return value.
 
 ### Example
 
 ```js
-const history = await ai.getHistory('user-123');
+const history = await ai.getHistory("user-123");
 if (!Array.isArray(history)) {
-  // storage failure — history.error.code, history.error.message
+  // storage failure  history.error.code, history.error.message
 } else {
   const lastFive = history.slice(-5);
 }
@@ -272,10 +272,10 @@ Deletes a user's stored conversation history.
 
 ### Parameters
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `userId` | `string` | Yes | The user whose history to delete. |
-| `options.limit` | `number` | No | If provided, deletes only the most recent `limit` messages. If omitted, deletes the entire history for that user. |
+| Field           | Type     | Required | Description                                                                                                       |
+| --------------- | -------- | -------- | ----------------------------------------------------------------------------------------------------------------- |
+| `userId`        | `string` | Yes      | The user whose history to delete.                                                                                 |
+| `options.limit` | `number` | No       | If provided, deletes only the most recent `limit` messages. If omitted, deletes the entire history for that user. |
 
 ### Throws (synchronously, before any storage call)
 
@@ -286,37 +286,37 @@ Deletes a user's stored conversation history.
 A `Promise` resolving to one of two shapes:
 
 - **Success:** `undefined`.
-- **Storage failure:** `{ success: false, error: { code: 'STORAGE_ERROR', message }, metadata }` — see [Error Codes Reference](#error-codes-reference). This happens if the active storage backend itself fails; it does not throw.
+- **Storage failure:** `{ success: false, error: { code: 'STORAGE_ERROR', message }, metadata }` see [Error Codes Reference](#error-codes-reference). This happens if the active storage backend itself fails; it does not throw.
 
 Check `result && result.success === false` if you need to detect a storage failure.
 
 ### Example
 
 ```js
-const result = await ai.deleteHistory('user-123');
+const result = await ai.deleteHistory("user-123");
 if (result && result.success === false) {
-  // storage failure — result.error.code, result.error.message
+  // storage failure  result.error.code, result.error.message
 }
 
-await ai.deleteHistory('user-123', { limit: 2 }); // drop just the last 2 messages
+await ai.deleteHistory("user-123", { limit: 2 }); // drop just the last 2 messages
 ```
 
 ---
 
 ## Error Codes Reference
 
-| Code | Meaning | Rotates keys? |
-|---|---|---|
-| `RATE_LIMIT` | Gemini returned 429 for the attempted key. | Yes |
-| `AUTH_ERROR` | Gemini returned 401/403 for the attempted key. | Yes |
-| `UPSTREAM_ERROR` | Gemini returned a 5xx server error. | Yes |
-| `NETWORK_ERROR` | No HTTP status was available (connection-level failure). | Yes |
-| `REQUEST_ERROR` | Gemini returned a non-rotatable error (e.g. 400, 404) — likely a malformed request. | No |
-| `ALL_KEYS_UNAVAILABLE` | Every configured key is currently blacklisted; no call was attempted. | N/A |
-| `NO_AUDIO_RETURNED` | Voice output was requested but Gemini TTS returned no audio part. | N/A |
-| `AUDIO_TRANSCODING_ERROR` | Gemini TTS returned audio, but converting it to OGG/Opus failed (unparseable sample rate, or the transcoding step itself failed). | N/A |
-| `STORAGE_ERROR` | The active storage backend failed (e.g. `MongoStore` could not connect or a read/write failed). Can surface from `handleMessage()`, `getHistory()`, or `deleteHistory()`. | N/A |
+| Code                      | Meaning                                                                                                                                                                   | Rotates keys? |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| `RATE_LIMIT`              | Gemini returned 429 for the attempted key.                                                                                                                                | Yes           |
+| `AUTH_ERROR`              | Gemini returned 401/403 for the attempted key.                                                                                                                            | Yes           |
+| `UPSTREAM_ERROR`          | Gemini returned a 5xx server error.                                                                                                                                       | Yes           |
+| `NETWORK_ERROR`           | No HTTP status was available (connection-level failure).                                                                                                                  | Yes           |
+| `REQUEST_ERROR`           | Gemini returned a non-rotatable error (e.g. 400, 404) likely a malformed request.                                                                                         | No            |
+| `ALL_KEYS_UNAVAILABLE`    | Every configured key is currently blacklisted; no call was attempted.                                                                                                     | N/A           |
+| `NO_AUDIO_RETURNED`       | Voice output was requested but Gemini TTS returned no audio part.                                                                                                         | N/A           |
+| `AUDIO_TRANSCODING_ERROR` | Gemini TTS returned audio, but converting it to OGG/Opus failed (unparseable sample rate, or the transcoding step itself failed).                                         | N/A           |
+| `STORAGE_ERROR`           | The active storage backend failed (e.g. `MongoStore` could not connect or a read/write failed). Can surface from `handleMessage()`, `getHistory()`, or `deleteHistory()`. | N/A           |
 
 Rotatable errors are retried against the next eligible key automatically within a single `handleMessage()` call; only once all eligible keys are exhausted (or a non-rotatable error occurs) does the call fail.
 
-`AUDIO_TRANSCODING_ERROR` and `STORAGE_ERROR` are distinct from the others in that they can occur *after* a Gemini call has already succeeded — they represent a failure in a step downstream of generation (transcoding audio, or persisting/reading history), not a failure of generation itself.
+`AUDIO_TRANSCODING_ERROR` and `STORAGE_ERROR` are distinct from the others in that they can occur _after_ a Gemini call has already succeeded they represent a failure in a step downstream of generation (transcoding audio, or persisting/reading history), not a failure of generation itself.
