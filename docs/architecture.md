@@ -4,43 +4,7 @@
 
 PersonaFlow follows a thin **orchestrator + services** architecture. The public `AI` class (`src/controllers/ai.js`) does not itself talk to Gemini, touch a database, or transcode audio. It coordinates a set of single-responsibility services, each of which owns exactly one concern:
 
-```
-                       ┌────────────────────┐
-        constructor()  │        AI          │
-   ┌───────────────────│   (orchestrator)   │───────────────────┐
-   │                    └─────────┬──────────┘                   │
-   │                              │ handleMessage()               │
-   ▼                              ▼                               ▼
-┌────────────┐   ┌────────────┐  ┌────────────┐   ┌──────────────────┐
-│  Gemini    │   │  Memory    │  │  Vision    │   │ SpeechRecognition │
-│  Service   │   │  Service   │  │  Service   │   │     Service       │
-└─────┬──────┘   └─────┬──────┘  └────────────┘   └─────────┬─────────┘
-      │                │                                     │
-      │          ┌─────┴──────┐                              │ (uses)
-      │          ▼            ▼                               ▼
-      │    ┌───────────┐ ┌───────────┐                 (GeminiService)
-      │    │ArrayStore │ │MongoStore │
-      │    └─────┬─────┘ └─────┬─────┘
-      │          │             │
-      │          └──────┬──────┘
-      │                 ▼
-      │          ┌─────────────┐
-      │          │ KeyedQueue  │
-      │          │  (util)     │
-      │          └─────────────┘
-      │
-      ▼
-┌──────────────┐    ┌───────────────┐
-│ ApiKeyPool   │    │ VoiceOutput   │
-│ (util)       │    │  Service      │
-└──────────────┘    └───────┬───────┘
-                             │ (uses GeminiService, audioTranscoder)
-                             ▼
-                     ┌───────────────┐
-                     │ audioTranscoder│
-                     │  (util)        │
-                     └───────────────┘
-```
+<img src = "../media/architecture.jpg" >
 
 Every service that talks to Gemini does so through `GeminiService` there is exactly one place in the codebase that knows how to call `@google/genai`.
 
@@ -52,7 +16,7 @@ Every service that talks to Gemini does so through `GeminiService` there is exac
 - Owns the lifecycle of all services: constructs `GeminiService` and `MemoryService` unconditionally; constructs `VisionService`, `SpeechRecognitionService`, and `VoiceOutputService` lazily, only when their `.use...()` method is called.
 - Implements the `handleMessage()` control flow: resolve effective input → fetch history → build model contents → generate reply → persist turn → optionally generate voice → assemble response.
 - Contains no Gemini API details and no storage details. If either changed entirely (different model provider, different database), this file should need minimal or no changes to its control flow.
-- Converts thrown storage-backend errors (e.g. `MongoStore` failing to connect) into the SDK's standard `{ success: false, error, metadata }` shape via `_storageFailureResponse()`, at every point it calls into `MemoryService` history retrieval and persistence in `handleMessage()`, and in `getHistory()`/`deleteHistory()` directly. This keeps the promise-rejects-only-on-developer-error contract intact even when the storage backend itself fails operationally.
+- Converts thrown storage-backend errors (e.g. `MongoStore` failing to connect) into the SDK's standard `{ success: false, error, metadata }` shape via `_storageFailureResponse()`, at every point it calls into `MemoryService` history retrieval and persistence in `handleMessage()`, and in `getHistory()`/`deleteHistory()` directly. This keeps the "promise-rejects-only-on-developer-error" contract intact even when the storage backend itself fails operationally.
 
 ### `src/services/gemini.js` `GeminiService`
 
@@ -84,9 +48,9 @@ Every service that talks to Gemini does so through `GeminiService` there is exac
 
 ### `src/services/voiceOutput.js` `VoiceOutputService`
 
-- Owns the two pieces of state that make voice output configurable: `probability` (should audio be generated this turn) and `includeText` (should text ride along with audio).
+- Owns the two pieces of state that make voice output configurable: `includeText` ("should text ride along with audio?") and `probability` ("how often should text be generated") and 
 - `shouldGenerateAudio()` performs the per-message random draw against `probability`.
-- `generate(text)` calls `GeminiService.synthesizeSpeech()`, then hands the raw PCM to `audioTranscoder` to produce the SDK's public OGG/Opus output format. The transcoding step happens here, not in `GeminiService`, keeping `GeminiService` unaware of the SDK's public audio format.
+- `generate(text)` calls `GeminiService.synthesizeSpeech()`, then hands the raw PCM to `audioTranscoder` to produce the SDK's public audio output format. The transcoding step happens here, not in `GeminiService`, keeping `GeminiService` unaware of the SDK's public audio format.
 - Wraps the transcoding step in a try/catch: if `parseSampleRate()` or `pcmToOggOpus()` throws or rejects, `generate()` returns a structured `{ success: false, error: { code: 'AUDIO_TRANSCODING_ERROR', message }, metadata: { keyIndex, model } }` rather than letting the error propagate as an unhandled rejection consistent with the failure shape every other Gemini-adjacent call in the SDK returns.
 
 ### `src/models/arrayStore.js` `ArrayStore`
@@ -125,7 +89,7 @@ Every service that talks to Gemini does so through `GeminiService` there is exac
 
 ### `src/utils/audioTranscoder.js`
 
-- Wraps the `ffmpeg-static` binary directly (via `child_process.spawn`) rather than a wrapper library, to transcode raw PCM (as returned by Gemini TTS) into OGG/Opus.
+- Wraps the `ffmpeg-static` binary directly (via `child_process.spawn`) rather than a wrapper library, to transcode raw PCM (as returned by Gemini TTS) into the output audio.
 - `parseSampleRate(mimeType)` extracts the sample rate Gemini reports (e.g. `audio/L16;codec=pcm;rate=24000`) so transcoding uses the correct input rate rather than an assumed constant.
 
 ### `src/config/defaults.js`
@@ -197,8 +161,8 @@ Configuration is deliberately one-directional and additive: `.use...()` calls on
 | Method                                | Contract                                                                               |
 | ------------------------------------- | -------------------------------------------------------------------------------------- |
 | `saveMessage(userId, { role, text })` | Appends a message; enforces `historyLimit`; serialized per `userId`                    |
-| `getHistory(userId, limit?)`          | Returns messages, chronological order, optionally capped                               |
-| `deleteHistory(userId, limit?)`       | Deletes all history, or only the most recent `limit` messages; serialized per `userId` |
+| `getHistory(userId, {limit?})`          | Returns messages, chronological order, optionally capped                               |
+| `deleteHistory(userId, {limit?})`       | Deletes all history, or only the most recent `limit` messages; serialized per `userId` |
 
 Both `ArrayStore` and `MongoStore` implement this identically from the caller's perspective, returning `{ role, text, createdAt }` records. The two backends differ only in _where_ the enforcement and trimming happen:
 

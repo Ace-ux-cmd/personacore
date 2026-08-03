@@ -58,14 +58,15 @@ console.log(response.text);
 console.log(response.metadata);
 ```
 
-`apiKeys` and `persona` are required. Everything else memory persistence, vision, voice input, voice output is opt-in.
+`apiKeys` and `persona` are required. Everything else memory persistence, vision, voice input, voice output is opt-in. 
 
+See [`SETUP.md`](/SETUP.md) for installation and setup guidance.
 ## Optional Features
 
 Each optional feature is enabled with a `.use...()` call on the instance before you start handling messages:
 
 ```js
-ai.useMemory("mongodb://localhost:27017/personaflow"); // persist history to MongoDB
+ai.useMemory(process.env.MONGODB_URL); // persist history to MongoDB
 ai.useVision(); // enable image understanding
 ai.useSpeechRecognition(); // enable voice input transcription
 ai.useVoiceOutput({ includeText: true, probability: 0.5 }); // enable spoken replies

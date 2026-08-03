@@ -22,6 +22,7 @@ Requirement IDs are stable identifiers for cross-referencing from `architecture.
   - `probability`, if provided, must be a number between 0 and 1 inclusive; invalid values throw.
   - `includeText`, if provided, must be a boolean; invalid values throw.
   - If `probability` is omitted, it defaults based on `includeText`: voice-only responses default to probability 1.0; voice-with-text responses default to probability 0.5.
+  - If `probability` is included without `includeText`, throws, meaning `includeText` is required before a `probability` field can be determined.
 - **FR-9.** Optional features that are not enabled must cause any request depending on them to fail with a clear, descriptive error rather than silently ignoring the input or crashing unexpectedly.
 
 ### Conversation Handling
@@ -51,37 +52,36 @@ Requirement IDs are stable identifiers for cross-referencing from `architecture.
 - **FR-23a.** If the active storage backend fails while `deleteHistory()` is deleting data, the call resolves (does not throw) with a structured failure object in the standard `{ success: false, error: { code, message }, metadata }` shape, in place of its normal `undefined` return.
 - **FR-24.** History for a given `userId` is independent across different `userId` values within the same `AI` instance.
 - **FR-25.** History is capped at `historyLimit` messages per user; once the cap is reached, the oldest messages are dropped as new ones are added.
-- **FR-26.** History entries store at minimum a `role` (`'user'` or `'model'`), `text`, and a creation timestamp.
+- **FR-26.** History entries store at minimum a `role` (`'user'` or `'model'`), `text`, and a `creation timestamp`.
 - **FR-27.** When memory is backed by MongoDB, each `AI` instance that calls `useMemory()` uses its own dedicated collection, so history from different instances never mixes even if they share a MongoDB URI.
 
 ### Vision
 
 - **FR-28.** When vision is enabled, an `image` Buffer supplied to `handleMessage()` is converted into a Gemini-compatible inline data part and included in the same model call as any accompanying text.
-- **FR-29.** Vision defaults to treating image buffers as JPEG when no explicit MIME type is available at the call site.
 
 ### Speech Recognition (Voice Input)
 
-- **FR-30.** When speech recognition is enabled, a `voice` Buffer supplied to `handleMessage()` is transcribed to text via a dedicated model call before conversational processing begins.
-- **FR-31.** Only the transcription never the raw audio is persisted to conversation history.
+- **FR-29.** When speech recognition is enabled, a `voice` Buffer supplied to `handleMessage()` is transcribed to text via a dedicated model call before conversational processing begins.
+- **FR-30.** Only the transcription never the raw audio is persisted to conversation history.
 
 ### Voice Output
 
-- **FR-32.** When voice output is enabled, whether a given reply includes generated audio is decided per-message by a random draw against the configured `probability`.
-- **FR-33.** Audio returned to the caller is encoded as OGG/Opus, regardless of the raw format returned by the underlying model.
-- **FR-34.** Whether the reply text accompanies generated audio in the response is controlled by `includeText`; it does not affect what is persisted to history (the model's full text reply is always persisted regardless of `includeText`).
+- **FR-31.** When voice output is enabled, whether a given reply includes generated audio is decided per-message by a random draw against the configured `probability`.
+- **FR-32.** Audio returned to the caller is encoded as OGG/Opus, regardless of the raw format returned by the underlying model.
+- **FR-33.** Whether the reply text accompanies generated audio in the response is controlled by `includeText`; it does not affect what is persisted to history (the model's full text reply is always persisted regardless of `includeText`).
 
 ### API Key Management
 
-- **FR-35.** The SDK accepts one or more Gemini API keys and distributes requests across them, retrying with an alternate eligible key when a request fails with a rotatable status code.
-- **FR-36.** Rotatable status codes are: 429 (rate limit), 401/403 (auth), and 5xx (upstream/server errors). Network-level errors with no HTTP status are also treated as rotatable.
-- **FR-37.** Non-rotatable errors (e.g. 400, 404) propagate immediately as a failure without attempting other keys.
-- **FR-38.** A key that fails with a rotatable error is temporarily excluded from selection ("blacklisted") for a fixed duration, after which it automatically becomes eligible again without requiring any restart or manual reset.
-- **FR-39.** If every configured key is currently ineligible, the SDK returns a structured failure indicating all keys are unavailable, without attempting a network call.
-- **FR-40.** Every successful and failed model-call outcome reports which key index was used (or attempted), how many keys were tried for that request, and whether rotation occurred.
+- **FR-34.** The SDK accepts one or more Gemini API keys and distributes requests across them, retrying with an alternate eligible key when a request fails with a rotatable status code.
+- **FR-35.** Rotatable status codes are: 429 (rate limit), 401/403 (auth), and 5xx (upstream/server errors). Network-level errors with no HTTP status are also treated as rotatable.
+- **FR-36.** Non-rotatable errors (e.g. 400, 404) propagate immediately as a failure without attempting other keys.
+- **FR-37.** A key that fails with a rotatable error is temporarily excluded from selection ("blacklisted") for a fixed duration, after which it automatically becomes eligible again without requiring any restart or manual reset.
+- **FR-38.** If every configured key is currently ineligible, the SDK returns a structured failure indicating all keys are unavailable, without attempting a network call.
+- **FR-39.** Every successful and failed model-call outcome reports which key index was used (or attempted), how many keys were tried for that request, and whether rotation occurred.
 
 ### Response Metadata
 
-- **FR-41.** `handleMessage()` responses include token usage, the API key index used, whether rotation occurred, how many keys were tried, response time in milliseconds, the model's finish reason, the configured history limit, and which model was used for each active capability (text, speech recognition, voice output).
+- **FR-40.** `handleMessage()` responses include token usage, the API key index used, whether rotation occurred, how many keys were tried, response time in milliseconds, the model's finish reason, the configured history limit, and which model was used for each active capability (text, speech recognition, voice output).
 
 ## Non-Functional Requirements
 

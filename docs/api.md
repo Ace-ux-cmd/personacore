@@ -16,6 +16,7 @@ Creates a new PersonaFlow instance.
 
 ### Parameters
 
+
 | Field          | Type       | Required | Description                                                                                                                             |
 | -------------- | ---------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | `apiKeys`      | `string[]` | Yes      | One or more Gemini API keys. Must be a non-empty array of non-empty strings.                                                            |
@@ -35,7 +36,7 @@ Creates a new PersonaFlow instance.
 const ai = new AI({
   apiKeys: [process.env.GEMINI_API_KEY_1, process.env.GEMINI_API_KEY_2],
   persona: "You are Anna. You are friendly, sarcastic and intelligent.",
-  historyLimit: 20,
+  historyLimit: 20, //Optional field to increase or decrease memory cap
 });
 ```
 
@@ -45,7 +46,7 @@ const ai = new AI({
 
 Switches conversation history storage from the default in-memory store to MongoDB. History persists across process restarts once enabled.
 
-Each `AI` instance gets its own dedicated collection (`personaflow_history`, scoped internally per instance), so multiple instances never share history even against the same MongoDB URI.
+Each `AI` instance gets its own dedicated collection (`personaflow_history_${uuid}`, scoped internally per instance), so multiple instances never share history even against the same MongoDB URI.
 
 ### Parameters
 
@@ -60,7 +61,7 @@ Each `AI` instance gets its own dedicated collection (`personaflow_history`, sco
 ### Example
 
 ```js
-ai.useMemory("mongodb://localhost:27017/personaflow");
+ai.useMemory("mongodb://localhost:27017/personaflow"); // Should be referenced only through env
 ```
 
 The connection is established lazily this call itself is synchronous, and connection errors surface the first time history is actually read or written.
@@ -97,28 +98,33 @@ ai.useSpeechRecognition();
 
 ## `.useVoiceOutput(options?)`
 
-Enables spoken audio replies. When enabled, some fraction of `handleMessage()` calls (per `probability`) generate an OGG/Opus audio reply in addition to (or instead of) text.
+Enables spoken audio replies. Once enabled, every `handleMessage()` call generates an audio reply. `probability` controls how often a text reply is also included alongside the audio.
 
 ### Parameters
 
-| Field                 | Type      | Required | Description                                                                                                                                                        |
-| --------------------- | --------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `options.includeText` | `boolean` | No       | Whether text accompanies generated audio in the response. Defaults to `false`.                                                                                     |
-| `options.probability` | `number`  | No       | Probability (0–1) that a given reply includes generated audio. If omitted, defaults to `1.0` when `includeText` is `false`, or `0.5` when `includeText` is `true`. |
+| Field                 | Type      | Required | Description                                                                                                                                                          |
+| --------------------- | --------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `options.includeText` | `boolean` | No       | Whether text can accompany the generated audio in the response. Defaults to `false`.                                                                              |
+| `options.probability` | `number`  | No       | Probability (0–1) that a given reply includes text, in addition to audio. Only valid when `includeText` is `true`. If `includeText` is `true` and `probability` is omitted, defaults to `0.5`. |
 
 ### Throws
 
 - `'PersonaFlow: "probability" must be a number between 0 and 1.'`
 - `'PersonaFlow: "includeText" must be a boolean.'`
+- `'PersonaFlow: "probability" is only valid when "includeText" is true.'`
 
 ### Example
 
 ```js
-// Audio-only replies, always generated
+// Audio-only replies, always generated, never any text
 ai.useVoiceOutput();
 
-// Audio + text, generated for ~50% of replies
+// Audio always generated; text included in ~50% of replies
 ai.useVoiceOutput({ includeText: true, probability: 0.5 });
+ai.useVoiceOutput({ includeText: true });
+
+// Audio always generated; text included in ~80% of replies
+ai.useVoiceOutput({ includeText: true, probability: 0.8 });
 ```
 
 ---
@@ -205,7 +211,7 @@ On failure, nothing is persisted to history for that turn the user's message is 
 
 A `STORAGE_ERROR` can occur even after Gemini has already generated a reply for example, if history retrieval fails before generation, or if the storage backend fails while persisting a turn that was otherwise successful (e.g. `MongoStore` losing its connection). In the latter case, `metadata.apiKeyIndex`/`rotated`/`keysTriedThisRequest` reflect the Gemini call that _did_ succeed, even though the overall result is a failure the generated reply itself is not returned or recoverable through this call.
 
-An `AUDIO_TRANSCODING_ERROR` can similarly occur after Gemini TTS has already returned audio successfully, if converting that audio to OGG/Opus fails (e.g. a malformed sample rate, or the bundled ffmpeg binary failing). As with `STORAGE_ERROR`, `metadata.keyIndex` reflects the Gemini call that succeeded.
+An `AUDIO_TRANSCODING_ERROR` can similarly occur after Gemini TTS has already returned audio successfully, if converting that audio fails (e.g. a malformed sample rate, or the bundled ffmpeg binary failing). As with `STORAGE_ERROR`, `metadata.keyIndex` reflects the Gemini call that succeeded.
 
 ### Examples
 
@@ -223,7 +229,7 @@ const res = await ai.handleMessage({
 // With voice input (requires useSpeechRecognition())
 const res = await ai.handleMessage({
   userId: "user-123",
-  voice: fs.readFileSync("./message.ogg"),
+  voice: fs.readFileSync("./message.mp3"),
 });
 ```
 
