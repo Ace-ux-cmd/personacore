@@ -7,6 +7,8 @@ const SpeechRecognitionService = require("../services/speechRecognition");
 const VoiceOutputService = require("../services/voiceOutput");
 const defaults = require("../config/defaults");
 const { detectImageMimeType } = require("../utils/fileTypeSniffer");
+const { randomUUID } = require("crypto");
+
 
 /**
  * PersonaFlow's main entry point.
@@ -64,15 +66,20 @@ class AI {
    * Enables persistent conversation history via MongoDB.
    * @param {string} mongoUri
    */
-  useMemory(mongoUri) {
-    if (!mongoUri || typeof mongoUri !== "string") {
-      throw new Error(
-        "PersonaFlow: useMemory() requires a valid MongoDB connection string.",
-      );
-    }
-    const collectionName = `personaflow_history`;
-    this._memory.useMongo(mongoUri, collectionName);
+useMemory(mongoUri) {
+  if (!mongoUri || typeof mongoUri !== "string") {
+    throw new Error(
+      "PersonaFlow: useMemory() requires a valid MongoDB connection string.",
+    );
   }
+  if (this._memoryCollectionName) {
+    throw new Error(
+      "PersonaFlow: useMemory() has already been called on this instance.",
+    );
+  }
+  this._memoryCollectionName = `personaflow_history_${randomUUID()}`;
+  this._memory.useMongo(mongoUri, this._memoryCollectionName);
+}
 
   /**
    * Enables image understanding.
@@ -92,40 +99,45 @@ class AI {
    * Enables voice output generation.
    * @param {{includeText?: boolean, probability?: number}} [options]
    */
+
   useVoiceOutput(options = {}) {
-    if (options.probability !== undefined) {
-      if (
-        typeof options.probability !== "number" ||
-        options.probability < 0 ||
-        options.probability > 1
-      ) {
-        throw new Error(
-          'PersonaFlow: "probability" must be a number between 0 and 1.',
-        );
-      }
-    }
+  if (options.probability !== undefined) {
     if (
-      options.includeText !== undefined &&
-      typeof options.includeText !== "boolean"
+      typeof options.probability !== "number" ||
+      options.probability < 0 ||
+      options.probability > 1
     ) {
-      throw new Error('PersonaFlow: "includeText" must be a boolean.');
+      throw new Error(
+        'PersonaFlow: "probability" must be a number between 0 and 1.',
+      );
     }
-
-    // Resolve the default probability based on includeText
-    // only when the caller didn't explicitly provide one.
-    const includeText = options.includeText === true;
-    const probability =
-      options.probability !== undefined
-        ? options.probability
-        : includeText
-          ? defaults.VOICE_OUTPUT.PROBABILITY_VOICE_AND_TEXT
-          : defaults.VOICE_OUTPUT.PROBABILITY_VOICE_ONLY;
-
-    this._voiceOutput = new VoiceOutputService(this._gemini, {
-      probability,
-      includeText,
-    });
   }
+  if (
+    options.includeText !== undefined &&
+    typeof options.includeText !== "boolean"
+  ) {
+    throw new Error('PersonaFlow: "includeText" must be a boolean.');
+  }
+
+  const includeText = options.includeText === true;
+
+  if (options.probability !== undefined && !includeText) {
+    throw new Error(
+      'PersonaFlow: "probability" is only valid when "includeText" is true.',
+    );
+  }
+
+  const probability = includeText
+    ? options.probability !== undefined
+      ? options.probability
+      : defaults.VOICE_OUTPUT.PROBABILITY_VOICE_AND_TEXT
+    : defaults.VOICE_OUTPUT.PROBABILITY_VOICE_ONLY;
+
+  this._voiceOutput = new VoiceOutputService(this._gemini, {
+    probability,
+    includeText,
+  });
+}
 
   /**
    * Processes a conversation request.

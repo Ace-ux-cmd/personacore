@@ -1,0 +1,195 @@
+════════════════════════════════════════════════════════════════════════════
+ PERSONAFLOW SDK — USAGE EXAMPLES
+
+ This is a plain-text copy of the code in basic.js, laid out so you can
+ read it without the full JS file feeling overwhelming.
+
+ HOW TO USE THIS FILE:
+   1. Copy the SETUP block into your .js file — you need this every time.
+   2. Copy the HELPER FUNCTIONS block if your scenario uses an image
+      or voice file — keep them next to whichever scenario you pick.
+   3. Pick ONE scenario below and copy its "request" + "main()" code
+      into the same file, replacing the placeholder main() from setup.
+   4. Run it with a real GEMINI_API_KEY in your .env file.
+════════════════════════════════════════════════════════════════════════════
+
+NOTE: EXAMPLE TEST SHOULD REMAIN IN THIS FILE
+OR ELSE YOU WOULD HAVE TO ADJUST THE PATHS YOURSELVES
+
+═════════════════════════════════════════════════════════════════════════════
+
+────────────────────────────────────────────────────────────────────────────
+ SETUP (required for every scenario)
+────────────────────────────────────────────────────────────────────────────
+
+"use strict";
+
+const path = require("path");
+const fs = require("fs");
+const AI = require("../index");
+require("dotenv").config();
+
+const ai = new AI({
+  apiKeys: [process.env.GEMINI_API_KEY],
+  persona:
+    "You are personaflow customer service agent. You are friendly, sarcastic and intelligent.",
+});
+
+// Optional features — uncomment the ones your scenario needs:
+
+// ai.useMemory(process.env.MONGO_URI);
+// ai.useVision();
+// ai.useSpeechRecognition();
+// ai.useVoiceOutput({ includeText: true, probability: 0.5 });
+// (probability: 1 = always generate audio)
+
+
+────────────────────────────────────────────────────────────────────────────
+ HELPER FUNCTIONS (only needed for scenarios using image or voice)
+────────────────────────────────────────────────────────────────────────────
+
+// Loads a sample image for useVision() testing.
+// Expects a file named "picture.png" next to this script.
+function loadTestImage() {
+  const imagePath = path.join(__dirname, "picture.png");
+  if (!fs.existsSync(imagePath)) {
+    throw new Error(
+      `Test image not found at ${imagePath}. Add a file named "picture.png" next to this script.`,
+    );
+  }
+  return fs.readFileSync(imagePath);
+}
+
+// Loads a sample audio clip for useSpeechRecognition() testing.
+// Expects a file named "output-audio.ogg" next to this script.
+function loadTestVoice() {
+  const voicePath = path.join(__dirname, "output-audio.ogg");
+  if (!fs.existsSync(voicePath)) {
+    throw new Error(
+      `Test audio not found at ${voicePath}. Add a file named "output-audio.ogg" next to this script.`,
+    );
+  }
+  return fs.readFileSync(voicePath);
+}
+
+
+────────────────────────────────────────────────────────────────────────────
+ SCENARIO 1 — Plain text message
+────────────────────────────────────────────────────────────────────────────
+
+async function main() {
+  const userId = "user-123";
+
+  const request = { userId, text: "Hello" };
+
+  const response = await ai.handleMessage(request);
+
+  console.log(response);
+  console.log(response.text);
+  console.log(response.metadata);
+}
+
+main().catch((err) => {
+  console.error("PersonaFlow example failed:", err.message);
+  process.exit(1);
+});
+
+
+────────────────────────────────────────────────────────────────────────────
+ SCENARIO 2 — Text + image (requires ai.useVision() uncommented in setup)
+────────────────────────────────────────────────────────────────────────────
+
+async function main() {
+  const userId = "user-123";
+
+  const request = {
+    userId,
+    text: "What's in this picture?",
+    image: loadTestImage(),
+  };
+
+  const response = await ai.handleMessage(request);
+
+  console.log(response);
+  console.log(response.text);
+  console.log(response.metadata);
+}
+
+main().catch((err) => {
+  console.error("PersonaFlow example failed:", err.message);
+  process.exit(1);
+});
+
+
+────────────────────────────────────────────────────────────────────────────
+ SCENARIO 3 — Voice input (requires ai.useSpeechRecognition() uncommented in setup)
+────────────────────────────────────────────────────────────────────────────
+
+async function main() {
+  const userId = "user-123";
+
+  const request = {
+    userId,
+    voice: loadTestVoice(),
+    text: "What does this say?",
+  };
+
+  const response = await ai.handleMessage(request);
+
+  console.log(response);
+  console.log(response.text);
+  console.log(response.metadata);
+
+  // If voice output is enabled, dump the audio to disk to listen to it.
+  if (response.audio) {
+    const outPath = path.join(__dirname, "output-audio.ogg");
+    fs.writeFileSync(outPath, response.audio);
+    console.log("Audio written to:", outPath);
+  }
+}
+
+main().catch((err) => {
+  console.error("PersonaFlow example failed:", err.message);
+  process.exit(1);
+});
+
+
+────────────────────────────────────────────────────────────────────────────
+ SCENARIO 4 — Image + voice combined (requires both useVision() and
+              useSpeechRecognition() uncommented in setup)
+────────────────────────────────────────────────────────────────────────────
+
+async function main() {
+  const userId = "user-123";
+
+  const request = {
+    userId,
+    image: loadTestImage(),
+    voice: loadTestVoice(),
+    text: "Do they align?",
+  };
+
+  const response = await ai.handleMessage(request);
+
+  console.log(response);
+  console.log(response.text);
+  console.log(response.metadata);
+}
+
+main().catch((err) => {
+  console.error("PersonaFlow example failed:", err.message);
+  process.exit(1);
+});
+
+
+────────────────────────────────────────────────────────────────────────────
+ EXTRA — checking conversation history
+────────────────────────────────────────────────────────────────────────────
+
+// Add this inside any main() above, before the closing brace, if you
+// want to inspect stored history (requires ai.useMemory() uncommented
+// in setup):
+
+const history = await ai.getHistory(userId);
+console.log("History length:", history.length);
+════════════════════════════════════════════════════════════════════════════
