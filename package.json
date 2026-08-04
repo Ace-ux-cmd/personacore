@@ -1,9 +1,9 @@
 {
   "name": "personaflow",
   "version": "0.1.0",
-  "description": "A persona-driven conversational AI SDK for Node.js, powered by Gemini.",
+  "description": "A persona-driven conversational AI SDK for Node.js, powered by Gemini multimodal services.",
   "main": "index.js",
-  "homepage": "https://ace-ux-cmd.github.io/PersonaFlow/index.html",
+  "homepage": "https://ace-ux-cmd.github.io/PersonaFlow/",
   "license": "MIT",
   "engines": {
     "node": ">=18"
