@@ -93,6 +93,14 @@ PersonaFlow is built around a few consistent ideas:
 - [`docs/api.md`](/docs/api.md) full developer API reference
 - [`docs/decisions.md`](/docs/decisions.md) architecture decision record (ADR)
 
+## Contact
+
+**Setup or runtime problems** (Installation, configuration, errors, unexpected behaviours) - Open a [Github Issue](https://github.com/Ace-ux-cmd/PersonaFlow/issues). Include your Node version, what you caalled, and the exact error or response you got.
+
+This also gives other users hitting the same problem something to search for.
+
+**Everything else** (Questions, feature ideas, general feedback) - [Reach out to me](mailto:elvismbonu100@gmail.com). 
+
 ## License
 
 MIT
