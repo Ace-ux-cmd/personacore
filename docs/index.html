@@ -1530,7 +1530,7 @@
         <a class="gh doc-link" href="#architecture">Architecture</a>
         <a class="gh doc-link" href="https://github.com/Ace-ux-cmd/PersonaFlow/blob/main/README.md">Readme.md</a>
         <a class="gh" href="https://github.com/Ace-ux-cmd/PersonaFlow.git">GitHub</a>
-        <a class="gh" href="#quickstart">npm</a>
+        <a class="gh" href="https://www.npmjs.com/package/personaflow">npm</a>
       </div>
     </div>
 
@@ -1635,7 +1635,7 @@
         <p>
           For a high-level conceptual breakdown and architecture summary, see
           the complete
-          <a class="inline-link" href="overview.md">Overview Documentation</a>.
+          <a class="inline-link" href="https://github.com/Ace-ux-cmd/PersonaFlow/blob/main/docs/overview.md">Overview Documentation</a>.
         </p>
       </section>
 
@@ -1701,8 +1701,8 @@ console.log(response.text);
         process.env.GEMINI_API_KEY
     ],
     persona: <span class="tok-str">`
-You are an expert technical system assistant.
-Provide direct, concise, and accurate responses.
+      You are a personaflow agent,
+  Provide direct, concise, and accurate responses.
 `</span>,
     historyLimit: <span class="tok-key">20</span>, <span class="tok-com">// Optional: memory storage cap</span>
 });
@@ -1715,7 +1715,10 @@ Provide direct, concise, and accurate responses.
 console.<span class="tok-fn">log</span>(response.text);
 <span class="tok-com">// 'Hello. How can I help you today?'</span></pre>
         </div>
-
+        <p>
+          Visit  <a class="inline-link" href="https://github.com/Ace-ux-cmd/PersonaFlow/blob/main/SETUP.md">SETUP</a>
+          for complete step-by-step guidance.
+        </p>
         <div class="spec-box">
           <div class="spec-title">Default Pipeline Behavior</div>
           <dl>
@@ -1751,7 +1754,7 @@ console.<span class="tok-fn">log</span>(response.text);
         <h3>Primary Engine: handleMessage()</h3>
         <p>
           The <span class="pill-code">handleMessage()</span> method accepts a
-          unified payload object. It does not enforce a rigid format&mdash;as
+          unified payload object. It does not enforce a rigid format, as
           long as <strong>at least one valid input parameter</strong> is
           supplied, the pipeline executes. Text input is not required if another
           input modality (such as an image or audio buffer) is provided.
@@ -1798,12 +1801,12 @@ console.<span class="tok-fn">log</span>(response.text);
           <tr>
             <td><span class="pill-code">image</span></td>
             <td><span class="pill-code">ai.useVision()</span></td>
-            <td>Buffer, Base64 string, URL</td>
+            <td>Buffer, Base64 string, URL(Experimental)</td>
           </tr>
           <tr>
             <td><span class="pill-code">voice</span></td>
             <td><span class="pill-code">ai.useSpeechRecognition()</span></td>
-            <td>Buffer, ReadStream</td>
+            <td>Buffer, ReadStream(Experimental)</td>
           </tr>
         </table>
 
@@ -2072,7 +2075,7 @@ if (history && history.success === false) {
           </div>
           <pre>ai.<span class="tok-fn">useVoiceOutput</span>({
   includeText: <span class="tok-key">true</span>,
-  probability: 1.0
+  probability: 0.8 <span class="tok-com">// 80% chance of generating audio in each response</span>
 });</pre>
         </div>
         <ul>
@@ -2087,9 +2090,9 @@ if (history && history.success === false) {
               <li>
                 <span class="pill-code">options.probability</span>
                 <em>(number, default: 0.5)</em>: A float between 0.0 and 1.0
-                defining the likelihood of generating voice output. At the
-                default setting of 0, speech synthesis is bypassed entirely,
-                returning standard text.
+                defining the likelihood of generating voice output. At a
+                setting of 0, speech synthesis is bypassed entirely,
+                returning only standard text.
               </li>
             </ul>
           </li>
@@ -2305,6 +2308,13 @@ if (history && history.success === false) {
           <li>User profiling</li>
           <li>Rate limiting</li>
         </ul>
+
+         <p>
+           For the design philosophy, architectural decisions, and guiding conventions behind the SDK design, and core concepts, see the
+
+          <a class="inline-link" href="https://github.com/Ace-ux-cmd/PersonaFlow/blob/main/docs/decisions.md">Design Principles documentation</a>.
+        </p>
+
       </section>
 
       <section class="doc-section" id="architecture">
@@ -2345,8 +2355,11 @@ if (history && history.success === false) {
         </div>
         <p class="muted">
           Hover a node each one maps to a single service module in
-          <span class="pill-code"><a class="inline-link" href="https://github.com/Ace-ux-cmd/personacore/blob/main/docs/architecture.md">Architecture Documentation</a></span>.
+          <span class="pill-code">/src/services</span>.
         </p>
+        <p>          See 
+          <a class="inline-link" href="https://github.com/Ace-ux-cmd/personacore/blob/main/docs/architecture.md">Architecture Documentation</a>
+</p>
       </section>
 
       <section class="doc-section" id="flow">
@@ -2560,9 +2573,9 @@ if (response.success) {
               The generated text output. Always present by default; omitted
               entirely if
               <span class="pill-code"
-                >useVoiceOutput({ includeText: false })</span
+                >useVoiceOutput({ includeText: true })</span
               >
-              is configured.
+              is not configured.
             </td>
           </tr>
           <tr>
@@ -3018,10 +3031,7 @@ if (response.success) {
             <span class="pill-code">mongoUri</span> missing or not a string
           </li>
           <li>
-            <em
-              >(does not throw for a bad/unreachable URI. That fails later,
-              structured, at first use.)</em
-            >
+            <span class="pill-code">mongoUri</span> Throws if the URI is invalid or the resource cannot be reached.
           </li>
         </ul>
 
@@ -3032,6 +3042,9 @@ if (response.success) {
           <li>
             <span class="pill-code">probability</span> provided but not a
             number, or outside 0 to 1
+          </li>
+          <li>
+            <span class="pill-code">probability</span> provided without <span class="pill-code">includeText</span>
           </li>
           <li>
             <span class="pill-code">includeText</span> provided but not a
@@ -3461,18 +3474,24 @@ await ai.deleteHistory("user_123", { limit: 2 });'
           <span class="pill-code">success</span> field rather than wrapping
           these calls in try/catch.
         </div>
+
+         <p>
+          For a high-level overview of the API's architecture, design, and core concepts, refer to the
+
+          <a class="inline-link" href="https://github.com/Ace-ux-cmd/PersonaFlow/blob/main/docs/api.md">API Documentation</a>.
+        </p>
       </section>
 
       <section class="doc-section" id="playground">
         <h2>Playground</h2>
         <p>
           Try PersonaFlow's methods directly from the docs. Editable fields are
-          highlighted; everything else reflects a realistic, locked
+          highlighted; everything else reflects a pre-made, locked
           configuration.
         </p>
         <div class="pg-status">
-          Live. Requests hit a real PersonaFlow server at
-          <code id="pgBaseUrlLabel"></code>.
+       Live: This playground sends requests to the PersonaFlow server at
+          <code id="pgBaseUrlLabel"></code>
         </div>
 
         <h3 id="pg-handlemessage" style="scroll-margin-top: 78px">
@@ -3515,8 +3534,11 @@ await ai.deleteHistory("user_123", { limit: 2 });'
             <pre
               class="pg-code"
             ><span class="tok-key">const</span> ai = <span class="tok-key">new</span> <span class="tok-fn">AI</span>({
-  apiKeys: [<span class="tok-str">"••••••••••••"</span>],
-  persona: <span class="tok-str">`You are Anna. Sarcastic, intelligent, concise.`</span>
+  apiKeys: [<span class="tok-str">"process.env.••••••••••••"</span>,
+            <span class="tok-str">"process.env.••••••••••••"</span>,
+            <span class="tok-str">"process.env.••••••••••••"</span>
+            ],
+  persona: <span class="tok-str">`You are a representative of personaflow`</span>
 });
 
 <span class="tok-key">const</span> response = <span class="tok-key">await</span> ai.<span class="tok-fn">handleMessage</span>({
@@ -3581,8 +3603,11 @@ Run the request to see the result here.</pre
             <pre
               class="pg-code"
             ><span class="tok-key">const</span> ai = <span class="tok-key">new</span> <span class="tok-fn">AI</span>({
-  apiKeys: [<span class="tok-str">"••••••••••••"</span>],
-  persona: <span class="tok-str">`You are Anna. Sarcastic, intelligent, concise.`</span>
+  apiKeys: [<span class="tok-str">"process.env.••••••••••••"</span>,
+            <span class="tok-str">"process.env.••••••••••••"</span>,
+            <span class="tok-str">"process.env.••••••••••••"</span>
+            ],
+  persona: <span class="tok-str">`You are a representative of personaflow`</span>
 });
 
 ai.<span class="tok-fn">useVision</span>();
@@ -3664,8 +3689,11 @@ Run the request to see the result here.</pre
             <pre
               class="pg-code"
             ><span class="tok-key">const</span> ai = <span class="tok-key">new</span> <span class="tok-fn">AI</span>({
-  apiKeys: [<span class="tok-str">"••••••••••••"</span>],
-  persona: <span class="tok-str">`You are Anna. Sarcastic, intelligent, concise.`</span>
+  apiKeys: [<span class="tok-str">"process.env.••••••••••••"</span>,
+            <span class="tok-str">"process.env.••••••••••••"</span>,
+            <span class="tok-str">"process.env.••••••••••••"</span>
+            ],
+  persona: <span class="tok-str">`You are a representative of personaflow`</span>
 });
 
 ai.<span class="tok-fn">useSpeechRecognition</span>();
@@ -3834,11 +3862,11 @@ Run the request to see the result here.</pre
         <div class="site-footer-rule"></div>
         <p class="site-footer-title">PersonaFlow. MIT License.</p>
         <p class="site-footer-links">
-          <a href="#" onclick="return false;">GitHub</a>
+          <a href="https://github.com/Ace-ux-cmd">GitHub</a>
           <span class="site-footer-dot">•</span>
-          <a href="#quickstart">npm</a>
+          <a href="mailto:elvismbonu100@gmail.com">Contact via Email</a>
           <span class="site-footer-dot">•</span>
-          <a href="#overview">Documentation</a>
+          <a href="https://github.com/Ace-ux-cmd/PersonaFlow/tree/main/docs">Documentation</a>
         </p>
         <p class="site-footer-tag">Built with focus on system resilience.</p>
       </footer>
@@ -4231,7 +4259,7 @@ Run the request to see the result here.</pre
       // to match what's printed in the widget markup.
       (function () {
         const PG_BASE_URL =
-          "personaflow-playground-server.pxxl.click";
+         "https://personaflow-server.onrender.com";
         const PG_USER_ID = "user_12345";
 
         const baseUrlLabel = document.getElementById("pgBaseUrlLabel");
